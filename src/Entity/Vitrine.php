@@ -19,14 +19,14 @@ class Vitrine
     private ?string $description = null;
 
     /**
-     * @var Collection<int, Figurine>
+     * @var Collection<int, Figure>
      */
-    #[ORM\OneToMany(targetEntity: Figurine::class, mappedBy: 'vitrine')]
-    private Collection $figurines;
+    #[ORM\OneToMany(targetEntity: Figure::class, mappedBy: 'vitrine')]
+    private Collection $figures;
 
     public function __construct()
     {
-        $this->figurines = new ArrayCollection();
+        $this->figures = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -47,29 +47,29 @@ class Vitrine
     }
 
     /**
-     * @return Collection<int, Figurine>
+     * @return Collection<int, Figure>
      */
-    public function getFigurines(): Collection
+    public function getFigures(): Collection
     {
-        return $this->figurines;
+        return $this->figures;
     }
 
-    public function addFigurine(Figurine $figurine): static
+    public function addFigure(Figure $figure): static
     {
-        if (!$this->figurines->contains($figurine)) {
-            $this->figurines->add($figurine);
-            $figurine->setVitrine($this);
+        if (!$this->figures->contains($figure)) {
+            $this->figures->add($figure);
+            $figure->setVitrine($this);
         }
 
         return $this;
     }
 
-    public function removeFigurine(Figurine $figurine): static
+    public function removeFigure(Figure $figure): static
     {
-        if ($this->figurines->removeElement($figurine)) {
+        if ($this->figures->removeElement($figure)) {
             // set the owning side to null (unless already changed)
-            if ($figurine->getVitrine() === $this) {
-                $figurine->setVitrine(null);
+            if ($figure->getVitrine() === $this) {
+                $figure->setVitrine(null);
             }
         }
 

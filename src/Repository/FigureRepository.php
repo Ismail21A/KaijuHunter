@@ -2,22 +2,22 @@
 
 namespace App\Repository;
 
-use App\Entity\Figurine;
+use App\Entity\Figure;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<Figurine>
+ * @extends ServiceEntityRepository<Figure>
  */
-class FigurineRepository extends ServiceEntityRepository
+class FigureRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, Figurine::class);
+        parent::__construct($registry, Figure::class);
     }
 
     //    /**
-    //     * @return Figurine[] Returns an array of Figurine objects
+    //     * @return Figure[] Returns an array of Figure objects
     //     */
     //    public function findByExampleField($value): array
     //    {
@@ -31,7 +31,7 @@ class FigurineRepository extends ServiceEntityRepository
     //        ;
     //    }
 
-    //    public function findOneBySomeField($value): ?Figurine
+    //    public function findOneBySomeField($value): ?Figure
     //    {
     //        return $this->createQueryBuilder('f')
     //            ->andWhere('f.exampleField = :val')
