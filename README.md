@@ -1,12 +1,12 @@
-# KaizoKage
-Projet Symfony — Gestion d’inventaire de figurines (One Piece × Naruto vibes)
+# KaijuHunter
+Projet Symfony — Gestion d’inventaire de figures (Solo Leveling × Kaiju N°8)
 
 ---
 
 ## Description
-KaizoKage est une application web Symfony permettant aux membres d’une communauté de :
-- gérer un inventaire privé de figurines,
-- publier certaines figurines dans des galeries publiques,
+KaijuHunter est une application web Symfony permettant aux membres d’une communauté de :
+- gérer un inventaire privé de figures,
+- publier certaines figures dans des galeries publiques,
 - consulter les collections des autres membres.
 
 Le projet s’appuie sur **Symfony 6** et **Doctrine ORM** avec une base SQLite en développement.
@@ -49,7 +49,7 @@ Le projet s’appuie sur **Symfony 6** et **Doctrine ORM** avec une base SQLite 
 
 ### 1. Cloner le projet
 ```bash
-git clone git@github.com:adamnjeh/KaizoKage.git
+git clone git@github.com:Ismail21A/KaijuHunter.git
 cd KaizoKage
 ```
 
@@ -78,5 +78,5 @@ Puis ouvrir : http://127.0.0.1:8000/figures
 ## Auteur
 
 Projet pédagogique réalisé dans le cadre du module CSC4101 / CSC4102 @ Télécom SudParis.
-Développé par Adam Njeh.
+Développé par Ismail Abid.
 Encadrant : Olivier Berger.

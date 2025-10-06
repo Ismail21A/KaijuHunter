@@ -1,0 +1,9 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Vitrine n°{{ vitrine.id }}{% endblock %}
+
+{% block body %}
+    <h1>Vitrine n°{{ vitrine.id }}</h1>
+    <p>Description : {{ vitrine.description }}</p>
+    <a href="{{ path('app_vitrine_index') }}">Back</a>
+{% endblock %}

@@ -46,4 +46,5 @@ class Figure
         $this->vitrine = $vitrine;
         return $this;
     }
+    
 }

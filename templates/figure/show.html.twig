@@ -1,0 +1,36 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ figure.name }}{% endblock %}
+
+{% block body %}
+  {% if figure.vitrine %}
+    <a href="{{ path('app_vitrine_show', { id: figure.vitrine.id }) }}">← Retour à la vitrine</a>
+  {% else %}
+    <a href="{{ path('app_vitrine_index') }}">← Retour à la liste des vitrines</a>
+  {% endif %}
+
+  <h1>{{ figure.name }}</h1>
+
+  <table class="table">
+    <tbody>
+      <tr>
+        <th>ID</th>
+        <td>{{ figure.id }}</td>
+      </tr>
+      <tr>
+        <th>Nom</th>
+        <td>{{ figure.name }}</td>
+      </tr>
+      {% if figure.vitrine %}
+      <tr>
+        <th>Vitrine</th>
+        <td>
+          <a href="{{ path('app_vitrine_show', { id: figure.vitrine.id }) }}">
+            Vitrine n°{{ figure.vitrine.id }}
+          </a>
+        </td>
+      </tr>
+      {% endif %}
+    </tbody>
+  </table>
+{% endblock %}
