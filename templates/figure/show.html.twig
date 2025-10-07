@@ -3,34 +3,25 @@
 {% block title %}{{ figure.name }}{% endblock %}
 
 {% block body %}
-  {% if figure.vitrine %}
-    <a href="{{ path('app_vitrine_show', { id: figure.vitrine.id }) }}">← Retour à la vitrine</a>
-  {% else %}
-    <a href="{{ path('app_vitrine_index') }}">← Retour à la liste des vitrines</a>
-  {% endif %}
+<div class="container py-4">
+  <a href="{{ path('figure_index') }}" class="btn btn-outline-secondary btn-sm mb-3">← Retour</a>
 
-  <h1>{{ figure.name }}</h1>
+  <h1 class="h3 mb-3">{{ figure.name }}</h1>
+  <dl class="row">
+    <dt class="col-sm-2">ID</dt>
+    <dd class="col-sm-10">{{ figure.id }}</dd>
 
-  <table class="table">
-    <tbody>
-      <tr>
-        <th>ID</th>
-        <td>{{ figure.id }}</td>
-      </tr>
-      <tr>
-        <th>Nom</th>
-        <td>{{ figure.name }}</td>
-      </tr>
+    <dt class="col-sm-2">Nom</dt>
+    <dd class="col-sm-10">{{ figure.name }}</dd>
+
+    <dt class="col-sm-2">Vitrine</dt>
+    <dd class="col-sm-10">
       {% if figure.vitrine %}
-      <tr>
-        <th>Vitrine</th>
-        <td>
-          <a href="{{ path('app_vitrine_show', { id: figure.vitrine.id }) }}">
-            Vitrine n°{{ figure.vitrine.id }}
-          </a>
-        </td>
-      </tr>
+        <a href="{{ path('vitrine_show', { id: figure.vitrine.id }) }}">Vitrine #{{ figure.vitrine.id }}</a>
+      {% else %}
+        —
       {% endif %}
-    </tbody>
-  </table>
+    </dd>
+  </dl>
+</div>
 {% endblock %}

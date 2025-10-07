@@ -1,0 +1,46 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des figures{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+  <h1 class="h3 mb-3">Figures</h1>
+
+  {% if figures is empty %}
+    <div class="alert alert-info">Aucune figure.</div>
+  {% else %}
+    <div class="table-responsive">
+      <table class="table table-striped align-middle">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nom</th>
+            <th>Vitrine</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for figure in figures %}
+            <tr>
+              <td>{{ figure.id }}</td>
+              <td>{{ figure.name }}</td>
+              <td>
+                {% if figure.vitrine %}
+                  <a href="{{ path('vitrine_show', { id: figure.vitrine.id }) }}">Vitrine #{{ figure.vitrine.id }}</a>
+                {% else %}
+                  —
+                {% endif %}
+              </td>
+              <td class="text-end">
+                <a class="btn btn-sm btn-outline-secondary" href="{{ path('figure_show', { id: figure.id }) }}">Voir</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+
+  <p><a href="{{ path('vitrine_index') }}">← Retour aux vitrines</a></p>
+</div>
+{% endblock %}

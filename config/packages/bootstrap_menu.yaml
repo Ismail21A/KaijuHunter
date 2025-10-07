@@ -1,0 +1,13 @@
+bootstrap_menu:
+    menus:
+        main:
+            items:
+                home:
+                    label: 'Accueil'
+                    route: 'home'
+                vitrines:
+                    label: 'Vitrines'
+                    route: 'vitrine_index'
+                figures:
+                    label: 'Figures'
+                    route: 'figure_index'
