@@ -1,82 +1,142 @@
 # KaijuHunter
-Projet Symfony — Gestion d’inventaire de figures (Solo Leveling × Kaiju N°8)
+Projet Symfony — Gestion d’inventaire de figures
 
 ---
 
 ## Description
-KaijuHunter est une application web Symfony permettant aux membres d’une communauté de :
-- gérer un inventaire privé de figures,
-- publier certaines figures dans des galeries publiques,
-- consulter les collections des autres membres.
+KaijuHunter est une application web Symfony 6 / Doctrine ORM pour gérer des figures rangées dans des vitrines :
 
-Le projet s’appuie sur **Symfony 6** et **Doctrine ORM** avec une base SQLite en développement.
+- Figure : name (string), relation vitrine (ManyToOne).
+- Vitrine : description (string/texte), collection figures (OneToMany).
 
----
-
-## Structure actuelle
-- `src/Controller/FigureController.php` → premier contrôleur Web
-- `templates/figure/index.html.twig` → gabarit Twig de test
-- `todo.sqlite` → base SQLite locale (tests/dev)
-- `.gitignore` → ignore `vendor/`, `var/`, `.env.local`…
+Cette étape intègre Bootstrap via la distribution Start Bootstrap – Shop Homepage et met en place des gabarits Twig minimalistes (sans images, uniquement les champs réels).
 
 ---
 
-## État d’avancement
-
-### Étapes terminées
-- [x] Création du dépôt GitHub + configuration branche `main`
-- [x] Ajout d’un `.gitignore` adapté
-- [x] Mise en place de la structure Symfony (squelette `todo`)
-- [x] Tests avec base SQLite + Doctrine ORM
-- [x] Création d’un contrôleur web (`FigureController`)
-- [x] Vérification de la route `/figures` (affichage basique Twig)
-
-### Prochaines étapes
-- [ ] Créer l’entité **Figure** avec Doctrine (`make:entity Figure`)
-  - Attributs : `id`, `nom`, `description`, `date_ajout`, `photo` (optionnelle)
-- [ ] Générer et exécuter une migration (`make:migration` + `doctrine:migrations:migrate`)
-- [ ] Préparer des **fixtures** pour insérer quelques figurines de test
-- [ ] Adapter le contrôleur :
-  - [ ] Récupérer toutes les figurines depuis la base
-  - [ ] Passer la liste à Twig (`index.html.twig`)
-- [ ] Modifier `templates/figure/index.html.twig` pour afficher la liste réelle
-- [ ] Vérifier affichage dans le navigateur
-- [ ] Améliorer la présentation (Twig, CSS, Bootstrap ou équivalent)
+## Prérequis
+- PHP compatible Symfony (≥ 8.1 recommandé)
+- Composer
+- Symfony CLI (recommandé)
+- Base de données configurée (SQLite en dev possible)
+- Optionnel : Migrations/fixtures prêtes si besoin
 
 ---
 
-## Installation & Exécution
+## Structure actuelle (principaux fichiers)
+- Contrôleurs
+  - src/Controller/HomeController.php → route home (/)
+  - src/Controller/FigureController.php → figure_index (/figures),    figure_show (/figures/{id})
+  - src/Controller/VitrineController.php → vitrine_index (/vitrines), vitrine_show (/vitrines/{id})
+- Gabarits Twig
+  - templates/base.html.twig (liens CSS/JS du thème via asset(), blocs menu et body)
+  - templates/home/index.html.twig
+  - templates/figure/index.html.twig, templates/figure/show.html.twig
+  - templates/vitrine/index.html.twig, templates/vitrine/show.html.twig
+- Intégration Start Bootstrap
+  - public/startbootstrap-shop-homepage-gh-pages/ (fichiers css/styles.css, js/scripts.js, etc.)
+  - config/packages/framework.yaml → assets.base_path: '/startbootstrap-shop-homepage-gh-pages'
+- Menu Bootstrap
+  - config/packages/bootstrap_menu.yaml (menu main)
+  - Bundle : camurphy/bootstrap-menu-bundle installé
 
-### 1. Cloner le projet
-```bash
-git clone git@github.com:Ismail21A/KaijuHunter.git
-cd KaizoKage
-```
+---
 
-### 2. Installer les dépendances
+## Installation et exécution
 
-```bash
-composer install
-```
+### 1) Dépendances
+    composer install
 
-### 3. Créer la base SQLite (dev)
+### 2) Base de données (développement)
+    symfony console doctrine:database:create
+    symfony console doctrine:schema:create
+    # ou via migrations :
+    # symfony console doctrine:migrations:migrate
+    # (facultatif) charger fixtures :
+    # symfony console doctrine:fixtures:load
 
-```bash
-symfony console doctrine:database:create
-symfony console doctrine:schema:create
-```
+### 3) Intégrer Start Bootstrap (conformément au guide)
+Depuis la racine du projet :
 
-### 4. Lancer le serveur local
+    cd public
+    wget https://github.com/startbootstrap/startbootstrap-shop-homepage/archive/gh-pages.zip
+    unzip gh-pages.zip
+    # → crée public/startbootstrap-shop-homepage-gh-pages/
 
-```bash
-symfony server:start
-```
-Puis ouvrir : http://127.0.0.1:8000/figures
+Configurer Symfony pour pointer les assets du thème :
+
+config/packages/framework.yaml
+
+    framework:
+      # ...
+      assets:
+        base_path: '/startbootstrap-shop-homepage-gh-pages'
+
+Grâce à assets.base_path, dans base.html.twig les appels {{ asset('css/styles.css') }} et {{ asset('js/scripts.js') }} pointent vers le dossier du thème.
+
+### 4) Menu Bootstrap
+Installer le bundle :
+
+    symfony composer require camurphy/bootstrap-menu-bundle
+
+Configuration minimale :
+
+config/packages/bootstrap_menu.yaml
+
+    bootstrap_menu:
+      menus:
+        main:
+          items:
+            home:      { label: 'Accueil',   route: 'home' }
+            figures: { label: 'Figures', route: 'figure_index' }
+            vitrines:  { label: 'Vitrines',  route: 'vitrine_index' }
+
+### 5) Lancer le serveur
+
+    symfony server:start
+    # ou
+    symfony serve -d
+
+Ouvrir :
+- / (Accueil)
+- /figures
+- /vitrines
+
+---
+
+## Étapes réalisées
+- [x] Squelette Symfony + Doctrine (SQLite dev)
+- [x] Entités : Figure (name, vitrine), Vitrine (description, figurines)
+- [x] Fixtures de base (si présentes)
+- [x] Contrôleurs : Home / Figure / Vitrine avec routes nommées
+- [x] Twig : base.html.twig + pages home, figure (index/show), vitrine (index/show)
+- [x] Bootstrap via Start Bootstrap – Shop Homepage (téléchargé dans public/…)
+- [x] Configuration assets : framework.assets.base_path
+- [x] Menu Bootstrap (bundle installé + bootstrap_menu.yaml minimal)
+
+---
+
+## Prochaines étapes
+- [ ] Formulaires (création/édition) pour Figure/Vitrine (FormType, contrôleurs POST)
+- [ ] Pagination et recherche (liste des figurines)
+- [ ] Validation entités + messages d’erreur
+- [ ] Personnalisation légère du CSS (surcouches au thème)
+- [ ] Optionnel : Authentification/autorisation si demandé par le guide
+
+---
+
+## Dépannage rapide
+- Route introuvable  
+  bin/console debug:router | grep -E 'home|figure|vitrine'
+- Classe contrôleur non trouvée  
+  Vérifier namespace App\Controller; et que le nom de classe = nom du fichier.
+- Template introuvable  
+  Vérifier le chemin templates/... et l’appel return $this->render('...').
+- Page blanche  
+  Contrôler les blocs Twig ({% block body %}), vider le cache :  
+  bin/console cache:clear
 
 ---
 
 ## Auteur
-
-Projet pédagogique réalisé dans le cadre du module CSC4101 / CSC4102 @ Télécom SudParis.
-Développé par Ismail Abid.
-Encadrant : Olivier Berger.
+Projet pédagogique (CSC4101/CSC4102).  
+Développé par Ismail Abid — Encadrant : Olivier Berger.
