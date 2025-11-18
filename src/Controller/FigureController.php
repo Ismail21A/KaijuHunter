@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Figure;
 use App\Entity\Vitrine;
+use App\Entity\Member;
 use App\Form\FigureType;
 use App\Repository\FigureRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -20,8 +21,28 @@ final class FigureController extends AbstractController
     #[Route(name: 'app_figure_index', methods: ['GET'])]
     public function index(FigureRepository $figureRepository): Response
     {
+        // Admin : voit toutes les figures
+        if ($this->isGranted('ROLE_ADMIN')) {
+            $figures = $figureRepository->findAll();
+            
+            return $this->render('figure/index.html.twig', [
+                'figures' => $figures,
+            ]);
+        }
+        
+        /** @var Member|null $member */
+        $member = $this->getUser();
+        
+        // Utilisateur non connecté : on le renvoie vers le login
+        if (! $member) {
+            return $this->redirectToRoute('app_login');
+        }
+        
+        // Utilisateur normal : seulement ses figures
+        $figures = $figureRepository->findMemberFigures($member);
+        
         return $this->render('figure/index.html.twig', [
-            'figures' => $figureRepository->findAll(),
+            'figures' => $figures,
         ]);
     }
     

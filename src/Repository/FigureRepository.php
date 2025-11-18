@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Figure;
+use App\Entity\Member;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -15,7 +16,21 @@ class FigureRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Figure::class);
     }
-
+    
+    /**
+     * @return Figure[] Returns an array of Figure objects for a member
+     */
+    public function findMemberFigures(Member $member): array
+    {
+        return $this->createQueryBuilder('f')
+        ->leftJoin('f.vitrine', 'v')
+        ->andWhere('v.owner = :member')
+        ->setParameter('member', $member)
+        ->getQuery()
+        ->getResult()
+        ;
+    }
+    
     //    /**
     //     * @return Figure[] Returns an array of Figure objects
     //     */
@@ -30,7 +45,7 @@ class FigureRepository extends ServiceEntityRepository
     //            ->getResult()
     //        ;
     //    }
-
+    
     //    public function findOneBySomeField($value): ?Figure
     //    {
     //        return $this->createQueryBuilder('f')

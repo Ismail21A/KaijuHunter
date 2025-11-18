@@ -1,15 +1,15 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Arenas publiques{% endblock %}
+{% block title %}Arenas{% endblock %}
 
 {% block body %}
 <div class="container py-4">
     
-    <h1 class="h3 mb-4">Arenas publiques</h1>
+    <h1 class="h3 mb-4">Arenas</h1>
 
     {% if arenas is empty %}
         <div class="alert alert-info">
-            Aucune arena publique disponible.
+            Aucune arena disponible.
         </div>
     {% else %}
         <div class="card shadow-sm">
@@ -19,27 +19,29 @@
                         <tr>
                             <th>ID</th>
                             <th>Description</th>
-                            <th>Publié</th>
+                            <th>Statut</th>
                             <th class="text-end">Voir</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for arena in arenas %}
-                            {% if arena.publie %}
-                                <tr>
-                                    <td class="text-muted">{{ arena.id }}</td>
-                                    <td>{{ arena.description }}</td>
-                                    <td>
-                                        <span class="badge bg-success">Oui</span>
-                                    </td>
-                                    <td class="text-end">
-                                        <a class="btn btn-sm btn-outline-secondary"
-                                           href="{{ path('app_arena_show', {'id': arena.id}) }}">
-                                            Voir
-                                        </a>
-                                    </td>
-                                </tr>
-                            {% endif %}
+                            <tr>
+                                <td class="text-muted">{{ arena.id }}</td>
+                                <td>{{ arena.description }}</td>
+                                <td>
+                                    {% if arena.publie %}
+                                        <span class="badge bg-success">Publique</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Privée</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">
+                                    <a class="btn btn-sm btn-outline-secondary"
+                                       href="{{ path('app_arena_show', {'id': arena.id}) }}">
+                                        Voir
+                                    </a>
+                                </td>
+                            </tr>
                         {% endfor %}
                     </tbody>
                 </table>

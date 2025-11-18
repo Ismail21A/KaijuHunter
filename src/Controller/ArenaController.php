@@ -18,21 +18,48 @@ use Symfony\Component\Routing\Attribute\Route;
 final class ArenaController extends AbstractController
 {
     /**
-     * Liste "publique" des Arenas (publie = true)
+     * Liste des Arenas :
+     *  - Admin : toutes
+     *  - Anonyme : uniquement publie = true
+     *  - Membre : publie = true + ses arenas privées
      */
     #[Route(name: 'app_arena_index', methods: ['GET'])]
     public function index(ArenaRepository $arenaRepository): Response
     {
+        /** @var Member|null $member */
+        $member = $this->getUser();
+        
+        // Vérification explicite du rôle admin
+        $isAdmin = $member instanceof Member
+        && \in_array('ROLE_ADMIN', $member->getRoles(), true);
+        
+        if ($isAdmin) {
+            // Admin : voit toutes les arenas, publiées ou non
+            $arenas = $arenaRepository->findAll();
+        } else {
+            // Arenas publiques visibles par tout le monde
+            $publicArenas = $arenaRepository->findBy(['publie' => true]);
+            
+            // Utilisateur non connecté : uniquement les publiques
+            if (!$member) {
+                $arenas = $publicArenas;
+            } else {
+                // Utilisateur connecté : publiques + ses privées
+                $privateArenas = $arenaRepository->findBy([
+                    'publie' => false,
+                    'owner'  => $member,
+                ]);
+                
+                $arenas = array_merge($publicArenas, $privateArenas);
+                $arenas = array_unique($arenas, \SORT_REGULAR);
+            }
+        }
+        
         return $this->render('arena/index.html.twig', [
-            // Seules les arenas publiées sont visibles ici
-            'arenas' => $arenaRepository->findBy(['publie' => true]),
+            'arenas' => $arenas,
         ]);
     }
     
-    /**
-     * Création d'une Arena pour un membre donné
-     * Route appelée depuis la page du membre : /arena/new/{id}
-     */
     #[Route('/new/{id}', name: 'app_arena_new', methods: ['GET', 'POST'])]
     public function new(
         Request $request,
@@ -40,7 +67,6 @@ final class ArenaController extends AbstractController
         EntityManagerInterface $entityManager
         ): Response {
             $arena = new Arena();
-            // On lie directement l’arena au propriétaire (Member)
             $arena->setOwner($member);
             
             $form = $this->createForm(ArenaType::class, $arena);
@@ -50,7 +76,6 @@ final class ArenaController extends AbstractController
                 $entityManager->persist($arena);
                 $entityManager->flush();
                 
-                // Retour à la fiche du membre
                 return $this->redirectToRoute(
                     'app_member_show',
                     ['id' => $member->getId()],
@@ -67,6 +92,24 @@ final class ArenaController extends AbstractController
     #[Route('/{id}', name: 'app_arena_show', methods: ['GET'])]
     public function show(Arena $arena): Response
     {
+        $hasAccess = false;
+        
+        if ($this->isGranted('ROLE_ADMIN')) {
+            $hasAccess = true;
+        } elseif ($arena->isPublie()) {
+            $hasAccess = true;
+        } else {
+            /** @var Member|null $member */
+            $member = $this->getUser();
+            if ($member && $arena->getOwner() === $member) {
+                $hasAccess = true;
+            }
+        }
+        
+        if (!$hasAccess) {
+            throw $this->createAccessDeniedException('You cannot access this arena.');
+        }
+        
         return $this->render('arena/show.html.twig', [
             'arena' => $arena,
         ]);
@@ -84,7 +127,6 @@ final class ArenaController extends AbstractController
             if ($form->isSubmitted() && $form->isValid()) {
                 $entityManager->flush();
                 
-                // Après édition, retour à la fiche du propriétaire
                 $owner = $arena->getOwner();
                 
                 if ($owner !== null) {
@@ -95,7 +137,6 @@ final class ArenaController extends AbstractController
                         );
                 }
                 
-                // Fallback : si pas d'owner (cas bizarre), retour à la liste publique
                 return $this->redirectToRoute('app_arena_index', [], Response::HTTP_SEE_OTHER);
             }
             
@@ -111,7 +152,7 @@ final class ArenaController extends AbstractController
         Arena $arena,
         EntityManagerInterface $entityManager
         ): Response {
-            $owner = $arena->getOwner(); // on garde ça avant le remove
+            $owner = $arena->getOwner();
             
             if ($this->isCsrfTokenValid('delete' . $arena->getId(), $request->getPayload()->getString('_token'))) {
                 $entityManager->remove($arena);
@@ -129,9 +170,6 @@ final class ArenaController extends AbstractController
             return $this->redirectToRoute('app_arena_index', [], Response::HTTP_SEE_OTHER);
     }
     
-    /**
-     * Vue publique d'une Figure dans une Arena donnée
-     */
     #[Route(
         '/{arena_id}/figure/{figure_id}',
         name: 'app_arena_figure_show',
@@ -142,28 +180,40 @@ final class ArenaController extends AbstractController
             #[MapEntity(id: 'arena_id')] Arena $arena,
             #[MapEntity(id: 'figure_id')] Figure $figure
             ): Response {
-                // Vérifier que la figure appartient bien à cette arena
                 if (!$arena->getFigures()->contains($figure)) {
                     throw $this->createNotFoundException("Couldn't find this figure in this arena.");
                 }
                 
-                // Si tu veux vraiment limiter aux arenas publiées, décommente ceci :
-                // if (!$arena->isPublie()) {
-                //     throw $this->createAccessDeniedException("You cannot access this arena.");
-                    // }
-                    
-                    $this->addFlash(
-                        'info',
-                        sprintf(
-                            'You are viewing %s in Arena #%d',
-                            $figure->getName() ?? ('Figure #' . $figure->getId()),
-                            $arena->getId()
-                            )
-                        );
-                    
-                    return $this->render('arena/figure_show.html.twig', [
-                        'arena'  => $arena,
-                        'figure' => $figure,
-                    ]);
+                $hasAccess = false;
+                
+                if ($this->isGranted('ROLE_ADMIN')) {
+                    $hasAccess = true;
+                } elseif ($arena->isPublie()) {
+                    $hasAccess = true;
+                } else {
+                    /** @var Member|null $member */
+                    $member = $this->getUser();
+                    if ($member && $arena->getOwner() === $member) {
+                        $hasAccess = true;
+                    }
+                }
+                
+                if (!$hasAccess) {
+                    throw $this->createAccessDeniedException('You cannot access this arena.');
+                }
+                
+                $this->addFlash(
+                    'info',
+                    sprintf(
+                        'You are viewing %s in Arena #%d',
+                        $figure->getName() ?? ('Figure #' . $figure->getId()),
+                        $arena->getId()
+                        )
+                    );
+                
+                return $this->render('arena/figure_show.html.twig', [
+                    'arena'  => $arena,
+                    'figure' => $figure,
+                ]);
         }
 }

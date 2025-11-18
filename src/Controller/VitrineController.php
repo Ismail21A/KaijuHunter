@@ -3,12 +3,12 @@
 namespace App\Controller;
 
 use App\Entity\Vitrine;
+use App\Entity\Member;
 use App\Repository\VitrineRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-
 
 #[Route('/vitrines')]
 final class VitrineController extends AbstractController
@@ -16,9 +16,28 @@ final class VitrineController extends AbstractController
     #[Route('', name: 'vitrine_index', methods: ['GET'])]
     public function index(VitrineRepository $vitrineRepository): Response
     {
-        $vitrines = $vitrineRepository->findAll();
+        // Admin : voit toutes les vitrines
+        if ($this->isGranted('ROLE_ADMIN')) {
+            $vitrines = $vitrineRepository->findAll();
+            
+            return $this->render('vitrine/index.html.twig', [
+                'vitrines' => $vitrines,
+            ]);
+        }
         
-        // Send data to Twig
+        /** @var Member|null $member */
+        $member = $this->getUser();
+        
+        // Utilisateur non connecté : on le renvoie vers le login
+        if (! $member) {
+            return $this->redirectToRoute('app_login');
+        }
+        
+        // Utilisateur normal : uniquement les vitrines dont il est owner
+        $vitrines = $vitrineRepository->findBy([
+            'owner' => $member,
+        ]);
+        
         return $this->render('vitrine/index.html.twig', [
             'vitrines' => $vitrines,
         ]);

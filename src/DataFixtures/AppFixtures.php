@@ -22,23 +22,47 @@ class AppFixtures extends Fixture
     public function load(ObjectManager $manager): void
     {
         /**
-         * Membres (les deux auront un mix des deux animes)
+         * Membres
+         * - admin@localhost   : ADMIN (aucune vitrine/arena/figure)
+         * - olivier@localhost : USER
+         * - slash@localhost   : USER
          */
         $membersData = [
-            ['key' => 'olivier', 'email' => 'olivier@localhost', 'password' => '123456'],
-            ['key' => 'slash',   'email' => 'slash@localhost',   'password' => '123456'],
+            [
+                'key'      => 'admin',
+                'email'    => 'admin@localhost',
+                'password' => 'admin123',
+                'roles'    => ['ROLE_ADMIN'],
+            ],
+            [
+                'key'      => 'olivier',
+                'email'    => 'olivier@localhost',
+                'password' => '123456',
+                'roles'    => ['ROLE_USER'],
+            ],
+            [
+                'key'      => 'slash',
+                'email'    => 'slash@localhost',
+                'password' => '123456',
+                'roles'    => ['ROLE_USER'],
+            ],
         ];
         
+        // Création des Members
         foreach ($membersData as $m) {
             $member = new Member();
             $member->setEmail($m['email']);
-            $member->setPassword($this->hasher->hashPassword($member, $m['password']));
+            $member->setPassword(
+                $this->hasher->hashPassword($member, $m['password'])
+                );
+            $member->setRoles($m['roles']);
+            
             $manager->persist($member);
             $this->addReference('member.' . $m['key'], $member);
         }
         
         /**
-         * Pool commun de personnages (Kaiju No. 8 + Solo Leveling)
+         * Pool commun de personnages
          */
         $characterPool = [
             // Kaiju No. 8
@@ -53,27 +77,32 @@ class AppFixtures extends Fixture
         $poolSize = count($characterPool);
         
         /**
-         * 1 Vitrine / membre (thème mix)
+         * On ne crée vitrines/figures/arenas QUE pour ces deux-là
          */
-        foreach ($membersData as $m) {
+        $collectorKeys = ['olivier', 'slash'];
+        
+        /**
+         * 1 Vitrine / membre (pour olivier & slash)
+         */
+        foreach ($collectorKeys as $key) {
             /** @var Member $owner */
-            $owner = $this->getReference('member.' . $m['key'], Member::class);
+            $owner = $this->getReference('member.' . $key, Member::class);
             
             $vitrine = new Vitrine();
-            $vitrine->setDescription('KaijuHunter Showcase — Mix Kaiju & Hunters (owner: ' . ucfirst($m['key']) . ')');
+            $vitrine->setDescription('KaijuHunter Showcase — (owner: ' . ucfirst($key) . ')');
             $vitrine->setOwner($owner);
             
             $manager->persist($vitrine);
-            $this->addReference('vitrine.' . $m['key'], $vitrine);
+            $this->addReference('vitrine.' . $key, $vitrine);
         }
         
         /**
-         * 6 Figures / membre en piochant dans le pool commun (offset différent par membre)
+         * 6 Figures / membre
          */
         $nbFiguresPerMember = 6;
-        foreach ($membersData as $index => $m) {
+        foreach ($collectorKeys as $index => $key) {
             /** @var Vitrine $vitrine */
-            $vitrine = $this->getReference('vitrine.' . $m['key'], Vitrine::class);
+            $vitrine = $this->getReference('vitrine.' . $key, Vitrine::class);
             
             // offset pour varier les noms entre membres
             $startOffset = ($index * 3) % $poolSize;
@@ -86,51 +115,43 @@ class AppFixtures extends Fixture
                 $fig->setVitrine($vitrine);
                 
                 $manager->persist($fig);
-                $this->addReference('figure.' . $m['key'] . '.' . ($i + 1), $fig);
+                $this->addReference('figure.' . $key . '.' . ($i + 1), $fig);
             }
         }
         
         /**
-         * 2 Arenas / membre (titres mixtes) + liaison de 3 figures chacune
+         * 2 Arenas / membre (publiée + privée) pour olivier & slash
          */
         $arenaNamePairs = [
-            // liste de couples (Arena 1, Arena 2) avec ambiance mix
             ['Shibuya Breach Arena', 'Hunter Association Arena'],
             ['Defense Force Proving Grounds', 'Jeju Raid Colosseum'],
-            ['Second Division Training Dome', 'Shadow Monarch’s Pit'],
-            ['Anti-Kaiju Battle Zone', 'Gate Break Coliseum'],
         ];
         
-        foreach ($membersData as $i => $m) {
+        foreach ($collectorKeys as $i => $key) {
             /** @var Member $owner */
-            $owner = $this->getReference('member.' . $m['key'], Member::class);
-            
+            $owner = $this->getReference('member.' . $key, Member::class);
             $pair = $arenaNamePairs[$i % count($arenaNamePairs)];
             [$name1, $name2] = $pair;
             
-            // Arena 1 : publiée = true
+            // Arena 1 (publique)
             $arena1 = new Arena();
-            $arena1->setDescription($name1 . ' — curated by ' . ucfirst($m['key']));
+            $arena1->setDescription($name1 . ' — curated by ' . ucfirst($key));
             $arena1->setPublie(true);
             $arena1->setOwner($owner);
-            // figures 1..3
-            $arena1->addFigure($this->getReference('figure.' . $m['key'] . '.1', Figure::class));
-            $arena1->addFigure($this->getReference('figure.' . $m['key'] . '.2', Figure::class));
-            $arena1->addFigure($this->getReference('figure.' . $m['key'] . '.3', Figure::class));
+            $arena1->addFigure($this->getReference('figure.' . $key . '.1', Figure::class));
+            $arena1->addFigure($this->getReference('figure.' . $key . '.2', Figure::class));
+            $arena1->addFigure($this->getReference('figure.' . $key . '.3', Figure::class));
             $manager->persist($arena1);
-            $this->addReference('arena.' . $m['key'] . '.1', $arena1);
             
-            // Arena 2 : publiée = false
+            // Arena 2 (privée)
             $arena2 = new Arena();
-            $arena2->setDescription($name2 . ' — curated by ' . ucfirst($m['key']));
+            $arena2->setDescription($name2 . ' — curated by ' . ucfirst($key));
             $arena2->setPublie(false);
             $arena2->setOwner($owner);
-            // figures 4..6
-            $arena2->addFigure($this->getReference('figure.' . $m['key'] . '.4', Figure::class));
-            $arena2->addFigure($this->getReference('figure.' . $m['key'] . '.5', Figure::class));
-            $arena2->addFigure($this->getReference('figure.' . $m['key'] . '.6', Figure::class));
+            $arena2->addFigure($this->getReference('figure.' . $key . '.4', Figure::class));
+            $arena2->addFigure($this->getReference('figure.' . $key . '.5', Figure::class));
+            $arena2->addFigure($this->getReference('figure.' . $key . '.6', Figure::class));
             $manager->persist($arena2);
-            $this->addReference('arena.' . $m['key'] . '.2', $arena2);
         }
         
         $manager->flush();
