@@ -1,0 +1,26 @@
+# Symfony / PHP
+/vendor/
+/var/
+/node_modules/
+/public/bundles/
+/.env.local
+/.env.local.php
+/.env.*.local
+/phpunit.xml
+/phpunit.xml.dist
+
+# Logs & cache
+*.log
+*.cache
+/.phpunit.result.cache
+
+# IDE / Éditeurs
+/.idea/
+/.vscode/
+/nbproject/
+/*.swp
+*~
+
+# OS files
+.DS_Store
+Thumbs.db

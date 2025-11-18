@@ -1,0 +1,16 @@
+# config/packages/bootstrap_menu.yaml
+bootstrap_menu:
+  menus:
+    main:
+      items:
+        - label: 'Home'
+          route: 'home'
+
+        - label: 'Arenas'
+          route: 'app_arena_index'
+
+        - label: 'Vitrines'
+          route: 'vitrine_index'
+
+        - label: 'Figures'
+          route: 'app_figure_index'

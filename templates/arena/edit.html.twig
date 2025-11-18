@@ -1,0 +1,21 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit Arena #{{ arena.id }}{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <h1 class="h3 mb-0">Edit Arena #{{ arena.id }}</h1>
+    <div class="d-flex gap-2">
+      <a class="btn btn-secondary" href="{{ path('app_arena_index') }}">Back to list</a>
+      {{ include('arena/_delete_form.html.twig') }}
+    </div>
+  </div>
+
+  <div class="card shadow-sm mb-3">
+    <div class="card-body">
+      {{ include('arena/_form.html.twig', {'button_label': 'Update'}) }}
+    </div>
+  </div>
+</div>
+{% endblock %}

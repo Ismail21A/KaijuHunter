@@ -1,0 +1,43 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Vitrines{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+  <h1 class="h3 mb-3">Vitrines</h1>
+
+  <div class="table-responsive">
+    <table class="table table-striped align-middle">
+      <thead>
+        <tr>
+          <th style="width:80px;">ID</th>
+          <th>Description</th>
+          <th class="text-center" style="width:120px;"># Figures</th>
+          <th style="width:100px;"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for vitrine in vitrines %}
+          <tr>
+            <td>{{ vitrine.id }}</td>
+            <td>{{ vitrine.description }}</td>
+            <td class="text-center">{{ vitrine.figures|length }}</td>
+            <td class="text-end">
+              <a class="btn btn-sm btn-outline-secondary"
+                 href="{{ path('vitrine_show', { id: vitrine.id }) }}">
+                Voir
+              </a>
+            </td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="4" class="text-muted text-center py-3">
+              Aucune vitrine disponible.
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

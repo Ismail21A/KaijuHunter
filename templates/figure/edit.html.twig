@@ -1,0 +1,25 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier Figurine{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+
+    <h1 class="h3 mb-4">Modifier la figurine</h1>
+
+    <div class="card shadow-sm mb-3">
+        <div class="card-body">
+            {{ include('figure/_form.html.twig', {'button_label': 'Mettre à jour'}) }}
+        </div>
+    </div>
+
+    <div class="d-flex gap-2">
+        <a href="javascript:history.back()" class="btn btn-outline-secondary btn-sm">
+            ← Retour
+        </a>
+
+        {{ include('figure/_delete_form.html.twig') }}
+    </div>
+
+</div>
+{% endblock %}

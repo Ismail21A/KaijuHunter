@@ -1,0 +1,74 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Arena #{{ arena.id }}{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+
+  <a class="btn btn-outline-secondary btn-sm mb-3"
+     href="{{ path('app_arena_index') }}">
+    ← Back to public arenas
+  </a>
+
+  <h1 class="h3 mb-4">Arena #{{ arena.id }}</h1>
+
+  {% if not arena.publie %}
+    <div class="alert alert-warning">
+      Cette arena n’est pas publique.
+    </div>
+  {% endif %}
+
+  <div class="card shadow-sm mb-4">
+    <div class="table-responsive">
+      <table class="table table-bordered mb-0">
+        <tbody>
+          <tr>
+            <th style="width:220px">ID</th>
+            <td>{{ arena.id }}</td>
+          </tr>
+
+          <tr>
+            <th>Description</th>
+            <td>{{ arena.description }}</td>
+          </tr>
+
+          <tr>
+            <th>Publié</th>
+            <td>
+              {% if arena.publie %}
+                <span class="badge bg-success">Oui</span>
+              {% else %}
+                <span class="badge bg-secondary">Non</span>
+              {% endif %}
+            </td>
+          </tr>
+
+          <tr>
+            <th>Figures dans cette Arena</th>
+            <td>
+              {% if arena.figures is empty %}
+                <em>Aucune figure dans cette arena.</em>
+              {% else %}
+                <ul class="mb-0">
+                  {% for f in arena.figures %}
+                    <li>
+                      <a href="{{ path('app_arena_figure_show', {
+                        arena_id: arena.id,
+                        figure_id: f.id
+                      }) }}">
+                        {{ f.name ?? ('Figure #' ~ f.id) }}
+                      </a>
+                    </li>
+                  {% endfor %}
+                </ul>
+              {% endif %}
+            </td>
+          </tr>
+
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,8 @@
+vich_uploader:
+    db_driver: orm
+
+    mappings:
+        figures:
+            uri_prefix: /uploads/figures
+            upload_destination: '%kernel.project_dir%/public/uploads/figures'
+            namer: Vich\UploaderBundle\Naming\SmartUniqueNamer

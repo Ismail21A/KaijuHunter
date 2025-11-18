@@ -1,0 +1,18 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Create Arena{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <h1 class="h3 mb-0">Create Arena</h1>
+    <a class="btn btn-secondary" href="{{ path('app_arena_index') }}">Back to list</a>
+  </div>
+
+  <div class="card shadow-sm">
+    <div class="card-body">
+      {{ include('arena/_form.html.twig', {'button_label': 'Create'}) }}
+    </div>
+  </div>
+</div>
+{% endblock %}

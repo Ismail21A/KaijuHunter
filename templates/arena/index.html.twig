@@ -1,0 +1,50 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Arenas publiques{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+    
+    <h1 class="h3 mb-4">Arenas publiques</h1>
+
+    {% if arenas is empty %}
+        <div class="alert alert-info">
+            Aucune arena publique disponible.
+        </div>
+    {% else %}
+        <div class="card shadow-sm">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover mb-0 align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Description</th>
+                            <th>Publié</th>
+                            <th class="text-end">Voir</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for arena in arenas %}
+                            {% if arena.publie %}
+                                <tr>
+                                    <td class="text-muted">{{ arena.id }}</td>
+                                    <td>{{ arena.description }}</td>
+                                    <td>
+                                        <span class="badge bg-success">Oui</span>
+                                    </td>
+                                    <td class="text-end">
+                                        <a class="btn btn-sm btn-outline-secondary"
+                                           href="{{ path('app_arena_show', {'id': arena.id}) }}">
+                                            Voir
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

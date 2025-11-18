@@ -1,0 +1,40 @@
+{{ form_start(form, {'attr': {'class': 'row g-3'}}) }}
+
+  <div class="col-12">
+    {{ form_label(form.description, null, {'label_attr': {'class': 'form-label'}}) }}
+    {{ form_widget(form.description, {'attr': {'class': 'form-control'}}) }}
+    {{ form_errors(form.description) }}
+  </div>
+
+  <div class="col-12">
+    <div class="form-check">
+      {{ form_widget(form.publie, {'attr': {'class': 'form-check-input'}}) }}
+      {{ form_label(form.publie, null, {'label_attr': {'class': 'form-check-label'}}) }}
+    </div>
+    {{ form_errors(form.publie) }}
+  </div>
+
+  {# If the generated form contains 'owner' and/or 'figures', we keep them visible as per the guide's scope #}
+  {% if form.owner is defined %}
+    <div class="col-12">
+      {{ form_label(form.owner, null, {'label_attr': {'class': 'form-label'}}) }}
+      {{ form_widget(form.owner, {'attr': {'class': 'form-select'}}) }}
+      {{ form_errors(form.owner) }}
+    </div>
+  {% endif %}
+
+  {% if form.figures is defined %}
+    <div class="col-12">
+      {{ form_label(form.figures, null, {'label_attr': {'class': 'form-label'}}) }}
+      {{ form_widget(form.figures, {'attr': {'class': 'form-select', 'size': 8, 'multiple': 'multiple'}}) }}
+      {{ form_errors(form.figures) }}
+      <div class="form-text">Hold Ctrl / Cmd to select multiple.</div>
+    </div>
+  {% endif %}
+
+  <div class="col-12 d-flex gap-2">
+    <button class="btn btn-primary">{{ button_label|default('Save') }}</button>
+    <a class="btn btn-outline-secondary" href="{{ path('app_arena_index') }}">Cancel</a>
+  </div>
+
+{{ form_end(form) }}

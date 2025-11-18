@@ -1,0 +1,22 @@
+{% form_theme form 'bootstrap_5_layout.html.twig' %}
+
+{{ form_start(form, { 'attr': { 'enctype': 'multipart/form-data' } }) }}
+
+<div class="card shadow-sm mb-3">
+    <div class="card-body">
+
+        {{ form_row(form.name) }}
+        {{ form_row(form.vitrine) }}
+        {{ form_row(form.arenas) }}
+
+        {# NEW — Image upload field #}
+        {{ form_row(form.imageFile) }}
+
+    </div>
+</div>
+
+<button class="btn btn-primary">
+    {{ button_label|default('Save') }}
+</button>
+
+{{ form_end(form) }}
