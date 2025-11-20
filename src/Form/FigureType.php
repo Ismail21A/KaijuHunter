@@ -17,7 +17,7 @@ class FigureType extends AbstractType
     {
         $builder
         ->add('name', null, [
-            'label' => 'Nom de la figurine',
+            'label' => 'Nom de la figure',
         ])
         
         // Vitrine : affichée mais non modifiable
@@ -39,7 +39,7 @@ class FigureType extends AbstractType
         
         // 🔥 New field: Image upload
         ->add('imageFile', FileType::class, [
-            'label'    => 'Image de la figurine',
+            'label'    => 'Image de la figure',
             'mapped'   => false,   // important: this field is NOT mapped to the entity
             'required' => false,   // optional on edit
         ]);

@@ -1,18 +1,57 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Create Arena{% endblock %}
+{% block title %}Créer une Arena{% endblock %}
 
 {% block body %}
 <div class="container py-4">
-  <div class="d-flex align-items-center justify-content-between mb-3">
-    <h1 class="h3 mb-0">Create Arena</h1>
-    <a class="btn btn-secondary" href="{{ path('app_arena_index') }}">Back to list</a>
-  </div>
 
-  <div class="card shadow-sm">
-    <div class="card-body">
-      {{ include('arena/_form.html.twig', {'button_label': 'Create'}) }}
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-3">
+            <li class="breadcrumb-item"><a href="{{ path('home') }}">Accueil</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('app_arena_index') }}">Arenas</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Créer</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-7 col-xl-6">
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h1 class="h4 mb-1">
+                        <i class="bi bi-trophy me-1"></i>
+                        Nouvelle Arena
+                    </h1>
+                    <p class="text-muted small mb-0">
+                        Créez une nouvelle arena pour organiser vos combats de figures.
+                    </p>
+                </div>
+
+                {% if arena.owner %}
+                    <div class="text-end small">
+                        <div class="text-muted">Propriétaire</div>
+                        <div>{{ arena.owner.email }}</div>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    {{ include('arena/_form.html.twig', { 'button_label': 'Créer' }) }}
+                </div>
+            </div>
+
+            <div class="mt-3 d-flex justify-content-between">
+                <a href="{{ path('app_member_show', { id: arena.owner.id }) }}" class="btn btn-outline-secondary btn-sm">
+                    ← Retour à mon espace
+                </a>
+                <a href="{{ path('app_arena_index') }}" class="btn btn-link btn-sm text-muted">
+                    Voir les arenas publiques
+                </a>
+            </div>
+
+        </div>
     </div>
-  </div>
+
 </div>
 {% endblock %}

@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Entity\Member;
-use App\Entity\Vitrine;
 use App\Repository\MemberRepository;
 use App\Repository\VitrineRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -20,16 +19,27 @@ final class MemberController extends AbstractController
             'members' => $memberRepository->findAll(),
         ]);
     }
-
+    
     #[Route('/{id}', name: 'app_member_show', methods: ['GET'])]
     public function show(Member $member, VitrineRepository $vitrineRepository): Response
     {
-        // On retrouve la vitrine du membre via l’owner
-        $vitrine = $vitrineRepository->findOneBy(['owner' => $member]);
-
-        return $this->render('member/show.html.twig', [
-            'member'  => $member,
-            'vitrine' => $vitrine,
-        ]);
+        // Contrôle d'accès :
+        // - Admin : peut voir tous les membres
+        // - Sinon : seul le membre lui-même peut voir sa page
+        if (
+            ! $this->isGranted('ROLE_ADMIN')
+            && $this->getUser() !== $member
+            ) {
+                throw $this->createAccessDeniedException("Accès non autorisé à cet espace membre.");
+            }
+            
+            // Une vitrine par membre (comme avant)
+            $vitrine = $vitrineRepository->findOneBy(['owner' => $member]);
+            
+            return $this->render('member/show.html.twig', [
+                'member'  => $member,
+                'vitrine' => $vitrine,
+                'arenas'  => $member->getArenas(), // collection d'arenas du membre
+            ]);
     }
 }

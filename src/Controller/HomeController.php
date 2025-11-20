@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Entity\Member;
+use App\Repository\ArenaRepository;   // ← add this use
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -10,18 +10,16 @@ use Symfony\Component\Routing\Annotation\Route;
 class HomeController extends AbstractController
 {
     #[Route('/', name: 'home', methods: ['GET'])]
-    public function index(): Response
+    public function index(ArenaRepository $arenaRepository): Response
     {
-        $user = $this->getUser();
+        $arenas = $arenaRepository->findBy(
+            ['publie' => true],
+            ['id' => 'DESC'],
+            3
+            );
         
-        // Si un membre est connecté, on le redirige directement vers sa fiche
-        if ($user instanceof Member) {
-            return $this->redirectToRoute('app_member_show', [
-                'id' => $user->getId(),
-            ]);
-        }
-        
-        // Sinon, page d'accueil "publique"
-        return $this->render('home/index.html.twig');
+        return $this->render('home/index.html.twig', [
+            'arenas' => $arenas,
+        ]);
     }
 }

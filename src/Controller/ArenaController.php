@@ -66,6 +66,19 @@ final class ArenaController extends AbstractController
         Member $member,
         EntityManagerInterface $entityManager
         ): Response {
+            /** @var Member|null $current */
+            $current = $this->getUser();
+            
+            // 19.2 — création : owner ou admin
+            $hasAccess = $this->isGranted('ROLE_ADMIN');
+            if (!$hasAccess && $current instanceof Member && $current->getId() === $member->getId()) {
+                $hasAccess = true;
+            }
+            
+            if (!$hasAccess) {
+                throw $this->createAccessDeniedException("You cannot create an arena for another member.");
+            }
+            
             $arena = new Arena();
             $arena->setOwner($member);
             
@@ -92,11 +105,10 @@ final class ArenaController extends AbstractController
     #[Route('/{id}', name: 'app_arena_show', methods: ['GET'])]
     public function show(Arena $arena): Response
     {
+        // 19.3 — accès aux arenas non publiées : owner ou admin
         $hasAccess = false;
         
-        if ($this->isGranted('ROLE_ADMIN')) {
-            $hasAccess = true;
-        } elseif ($arena->isPublie()) {
+        if ($this->isGranted('ROLE_ADMIN') || $arena->isPublie()) {
             $hasAccess = true;
         } else {
             /** @var Member|null $member */
@@ -121,23 +133,35 @@ final class ArenaController extends AbstractController
         Arena $arena,
         EntityManagerInterface $entityManager
         ): Response {
+            // 19.2 — modification : owner ou admin
+            $hasAccess = false;
+            
+            if ($this->isGranted('ROLE_ADMIN')) {
+                $hasAccess = true;
+            } else {
+                /** @var Member|null $current */
+                $current = $this->getUser();
+                if ($current && $arena->getOwner() === $current) {
+                    $hasAccess = true;
+                }
+            }
+            
+            if (!$hasAccess) {
+                throw $this->createAccessDeniedException('You cannot edit this arena.');
+            }
+            
             $form = $this->createForm(ArenaType::class, $arena);
             $form->handleRequest($request);
             
             if ($form->isSubmitted() && $form->isValid()) {
                 $entityManager->flush();
                 
-                $owner = $arena->getOwner();
-                
-                if ($owner !== null) {
-                    return $this->redirectToRoute(
-                        'app_member_show',
-                        ['id' => $owner->getId()],
-                        Response::HTTP_SEE_OTHER
-                        );
-                }
-                
-                return $this->redirectToRoute('app_arena_index', [], Response::HTTP_SEE_OTHER);
+                // Après édition : rester sur la page de l’Arena
+                return $this->redirectToRoute(
+                    'app_arena_show',
+                    ['id' => $arena->getId()],
+                    Response::HTTP_SEE_OTHER
+                    );
             }
             
             return $this->render('arena/edit.html.twig', [
@@ -152,6 +176,23 @@ final class ArenaController extends AbstractController
         Arena $arena,
         EntityManagerInterface $entityManager
         ): Response {
+            // 19.2 — suppression : owner ou admin
+            $hasAccess = false;
+            
+            if ($this->isGranted('ROLE_ADMIN')) {
+                $hasAccess = true;
+            } else {
+                /** @var Member|null $current */
+                $current = $this->getUser();
+                if ($current && $arena->getOwner() === $current) {
+                    $hasAccess = true;
+                }
+            }
+            
+            if (!$hasAccess) {
+                throw $this->createAccessDeniedException('You cannot delete this arena.');
+            }
+            
             $owner = $arena->getOwner();
             
             if ($this->isCsrfTokenValid('delete' . $arena->getId(), $request->getPayload()->getString('_token'))) {
@@ -184,11 +225,10 @@ final class ArenaController extends AbstractController
                     throw $this->createNotFoundException("Couldn't find this figure in this arena.");
                 }
                 
+                // 19.4 — figure d’une arena non publiée : owner ou admin
                 $hasAccess = false;
                 
-                if ($this->isGranted('ROLE_ADMIN')) {
-                    $hasAccess = true;
-                } elseif ($arena->isPublie()) {
+                if ($this->isGranted('ROLE_ADMIN') || $arena->isPublie()) {
                     $hasAccess = true;
                 } else {
                     /** @var Member|null $member */

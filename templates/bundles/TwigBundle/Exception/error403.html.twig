@@ -1,0 +1,33 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Accès refusé{% endblock %}
+
+{% block body %}
+<div class="container py-5 text-center">
+
+    <div class="mb-4">
+        <span class="display-1 fw-bold text-danger">403</span>
+        <h1 class="h3 mt-3">Accès non autorisé</h1>
+        <p class="text-muted">
+            Vous n’avez pas les permissions nécessaires pour accéder à cette page.
+        </p>
+    </div>
+
+    <div class="mt-4 d-flex justify-content-center gap-2">
+        <a href="{{ path('home') }}" class="btn btn-primary">
+            Retour à l’accueil
+        </a>
+
+        {% if app.user %}
+            <a href="{{ path('app_member_show', { id: app.user.id }) }}" class="btn btn-outline-secondary">
+                Retour à mon espace
+            </a>
+        {% else %}
+            <a href="{{ path('app_login') }}" class="btn btn-outline-secondary">
+                Se connecter
+            </a>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

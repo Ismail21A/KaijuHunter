@@ -1,24 +1,72 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Modifier Figurine{% endblock %}
+{% block title %}Modifier figure — {{ figure.name }}{% endblock %}
 
 {% block body %}
 <div class="container py-4">
 
-    <h1 class="h3 mb-4">Modifier la figurine</h1>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-3">
+            <li class="breadcrumb-item"><a href="{{ path('home') }}">Accueil</a></li>
+            {% if figure.vitrine %}
+                <li class="breadcrumb-item">
+                    <a href="{{ path('vitrine_show', { id: figure.vitrine.id }) }}">
+                        Vitrine #{{ figure.vitrine.id }}
+                    </a>
+                </li>
+            {% endif %}
+            <li class="breadcrumb-item">
+                <a href="{{ path('app_figure_show', { id: figure.id }) }}">
+                    Figure {{ figure.name ?: ('#' ~ figure.id) }}
+                </a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">Modifier</li>
+        </ol>
+    </nav>
 
-    <div class="card shadow-sm mb-3">
-        <div class="card-body">
-            {{ include('figure/_form.html.twig', {'button_label': 'Mettre à jour'}) }}
+    <div class="row justify-content-center">
+        <div class="col-lg-7 col-xl-6">
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h1 class="h4 mb-1">
+                        <i class="bi bi-pencil-square me-1"></i>
+                        Modifier la figure
+                    </h1>
+                    <p class="text-muted small mb-0">
+                        Mettez à jour les informations de cette figure.
+                    </p>
+                </div>
+
+                {% if figure.imageName %}
+                    <div class="text-end">
+                        <span class="text-muted small d-block mb-1">Aperçu</span>
+                        <img
+                            src="/uploads/figures/{{ figure.imageName }}"
+                            alt="{{ figure.name }}"
+                            class="rounded"
+                            style="height: 48px; width: auto;"
+                        >
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="card shadow-sm border-0 mb-3">
+                <div class="card-body">
+                    {{ include('figure/_form.html.twig', { 'button_label': 'Mettre à jour' }) }}
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center">
+                <a href="{{ path('app_figure_show', { id: figure.id }) }}" class="btn btn-outline-secondary btn-sm">
+                    ← Retour à la figure
+                </a>
+                <div>
+                    {{ include('figure/_delete_form.html.twig') }}
+                </div>
+            </div>
+
         </div>
-    </div>
-
-    <div class="d-flex gap-2">
-        <a href="javascript:history.back()" class="btn btn-outline-secondary btn-sm">
-            ← Retour
-        </a>
-
-        {{ include('figure/_delete_form.html.twig') }}
     </div>
 
 </div>

@@ -34,7 +34,7 @@ final class FigureController extends AbstractController
         $member = $this->getUser();
         
         // Utilisateur non connecté : on le renvoie vers le login
-        if (! $member) {
+        if (!$member) {
             return $this->redirectToRoute('app_login');
         }
         
@@ -49,6 +49,19 @@ final class FigureController extends AbstractController
     #[Route('/new/{id}', name: 'app_figure_new', methods: ['GET', 'POST'])]
     public function new(Request $request, Vitrine $vitrine, EntityManagerInterface $entityManager): Response
     {
+        /** @var Member|null $current */
+        $current = $this->getUser();
+        
+        // 19.2 — création : réservée au propriétaire de la vitrine ou à l’admin
+        $hasAccess = $this->isGranted('ROLE_ADMIN');
+        if (!$hasAccess && $current instanceof Member && $vitrine->getOwner() === $current) {
+            $hasAccess = true;
+        }
+        
+        if (!$hasAccess) {
+            throw $this->createAccessDeniedException("You cannot add a figure to another member's vitrine.");
+        }
+        
         $figure = new Figure();
         // Contextualisation : la figure appartient à cette vitrine
         $figure->setVitrine($vitrine);
@@ -92,6 +105,25 @@ final class FigureController extends AbstractController
     #[Route('/{id}', name: 'app_figure_show', methods: ['GET'])]
     public function show(Figure $figure): Response
     {
+        // 19.1 — consultation : owner ou admin
+        $hasAccess = false;
+        
+        if ($this->isGranted('ROLE_ADMIN')) {
+            $hasAccess = true;
+        } else {
+            /** @var Member|null $current */
+            $current = $this->getUser();
+            $vitrine = $figure->getVitrine();
+            
+            if ($current instanceof Member && $vitrine && $vitrine->getOwner() === $current) {
+                $hasAccess = true;
+            }
+        }
+        
+        if (!$hasAccess) {
+            throw $this->createAccessDeniedException("You cannot access another member's figure.");
+        }
+        
         return $this->render('figure/show.html.twig', [
             'figure' => $figure,
         ]);
@@ -100,6 +132,25 @@ final class FigureController extends AbstractController
     #[Route('/{id}/edit', name: 'app_figure_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Figure $figure, EntityManagerInterface $entityManager): Response
     {
+        // 19.2 — modification : owner ou admin
+        $hasAccess = false;
+        
+        if ($this->isGranted('ROLE_ADMIN')) {
+            $hasAccess = true;
+        } else {
+            /** @var Member|null $current */
+            $current = $this->getUser();
+            $vitrine = $figure->getVitrine();
+            
+            if ($current instanceof Member && $vitrine && $vitrine->getOwner() === $current) {
+                $hasAccess = true;
+            }
+        }
+        
+        if (!$hasAccess) {
+            throw $this->createAccessDeniedException("You cannot edit another member's figure.");
+        }
+        
         $form = $this->createForm(FigureType::class, $figure);
         $form->handleRequest($request);
         
@@ -122,16 +173,10 @@ final class FigureController extends AbstractController
             
             $entityManager->flush();
             
-            // Retour vers la vitrine de cette figure si elle existe
-            $vitrine = $figure->getVitrine();
-            if ($vitrine) {
-                return $this->redirectToRoute('vitrine_show', [
-                    'id' => $vitrine->getId(),
-                ], Response::HTTP_SEE_OTHER);
-            }
-            
-            // Fallback (au cas où, mais normalement la vitrine est non nulle)
-            return $this->redirectToRoute('app_figure_index', [], Response::HTTP_SEE_OTHER);
+            // Après update : on reste sur la page de la figure
+            return $this->redirectToRoute('app_figure_show', [
+                'id' => $figure->getId(),
+            ], Response::HTTP_SEE_OTHER);
         }
         
         return $this->render('figure/edit.html.twig', [
@@ -143,6 +188,25 @@ final class FigureController extends AbstractController
     #[Route('/{id}', name: 'app_figure_delete', methods: ['POST'])]
     public function delete(Request $request, Figure $figure, EntityManagerInterface $entityManager): Response
     {
+        // 19.2 — suppression : owner ou admin
+        $hasAccess = false;
+        
+        if ($this->isGranted('ROLE_ADMIN')) {
+            $hasAccess = true;
+        } else {
+            /** @var Member|null $current */
+            $current = $this->getUser();
+            $vitrine = $figure->getVitrine();
+            
+            if ($current instanceof Member && $vitrine && $vitrine->getOwner() === $current) {
+                $hasAccess = true;
+            }
+        }
+        
+        if (!$hasAccess) {
+            throw $this->createAccessDeniedException("You cannot delete another member's figure.");
+        }
+        
         // On garde la vitrine avant de supprimer
         $vitrine = $figure->getVitrine();
         

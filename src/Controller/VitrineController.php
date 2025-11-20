@@ -53,8 +53,22 @@ final class VitrineController extends AbstractController
             throw $this->createNotFoundException('The vitrine does not exist');
         }
         
-        return $this->render('vitrine/show.html.twig', [
-            'vitrine' => $vitrine,
-        ]);
+        /** @var Member|null $current */
+        $current = $this->getUser();
+        
+        // Seul l’admin ou le propriétaire peut voir la vitrine
+        if (
+            ! $this->isGranted('ROLE_ADMIN') &&
+            (
+                ! $current ||
+                $vitrine->getOwner() !== $current
+                )
+            ) {
+                throw $this->createAccessDeniedException("You cannot access another member's vitrine.");
+            }
+            
+            return $this->render('vitrine/show.html.twig', [
+                'vitrine' => $vitrine,
+            ]);
     }
 }

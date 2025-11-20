@@ -1,95 +1,182 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Membre #{{ member.id }}{% endblock %}
+{% block title %}Mon espace — {{ member.email }}{% endblock %}
 
 {% block body %}
 <div class="container py-4">
-  <a href="{{ path('app_member_index') }}" class="btn btn-outline-secondary btn-sm mb-3">
-    ← Retour à la liste des membres
-  </a>
 
-  <h1 class="h3 mb-3">Profil du membre</h1>
-
-  <dl class="row">
-    <dt class="col-sm-2">ID</dt>
-    <dd class="col-sm-10">{{ member.id }}</dd>
-
-    <dt class="col-sm-2">Email</dt>
-    <dd class="col-sm-10">{{ member.email }}</dd>
-  </dl>
-
-  <hr>
-
-  <h2 class="h5 mb-3">Mon inventaire (vitrine)</h2>
-
-  {% if vitrine %}
-    <p>
-      Cette vitrine est liée à ce membre.<br>
-      <a class="btn btn-primary btn-sm mt-2"
-         href="{{ path('vitrine_show', { id: vitrine.id }) }}">
-        Voir ma vitrine
-      </a>
-    </p>
-  {% else %}
-    <div class="alert alert-warning">
-      Ce membre n'a pas encore de vitrine associée.
+  {# Message admin si l’admin consulte un autre profil #}
+  {% if is_granted('ROLE_ADMIN') and app.user.id != member.id %}
+    <div class="alert alert-warning mb-4">
+      Vous consultez l’espace de <strong>{{ member.email }}</strong> en tant qu’administrateur.
     </div>
   {% endif %}
 
-  <hr class="my-4">
+  {# En-tête / breadcrumb #}
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-1">
+          <li class="breadcrumb-item">
+            <a href="{{ path('home') }}">Accueil</a>
+          </li>
+          <li class="breadcrumb-item active" aria-current="page">
+            Mon espace
+          </li>
+        </ol>
+      </nav>
+      <h1 class="h3 mb-0">Espace de {{ member.email }}</h1>
+    </div>
 
-  <h2 class="h5 mb-3">Mes arènes</h2>
-
-  <div class="d-flex justify-content-between align-items-center mb-2">
-    <span class="text-muted">Arenas créées par {{ member.email }}</span>
-    <a class="btn btn-sm btn-primary"
-       href="{{ path('app_arena_new', { id: member.id }) }}">
-      + Créer une nouvelle Arena
-    </a>
+    <span class="badge {% if is_granted('ROLE_ADMIN') %}bg-danger{% else %}bg-primary{% endif %} px-3 py-2">
+      {% if is_granted('ROLE_ADMIN') %}Admin{% else %}Membre{% endif %}
+    </span>
   </div>
 
-  {% if member.arenas is empty %}
-    <div class="alert alert-info">Aucune arena pour l’instant.</div>
-  {% else %}
-    <div class="table-responsive">
-      <table class="table table-striped align-middle">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Description</th>
-            <th>Publique ?</th>
-            <th># Figures</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for arena in member.arenas %}
-            <tr>
-              <td>{{ arena.id }}</td>
-              <td>{{ arena.description }}</td>
-              <td>
-                {% if arena.publie %}
-                  <span class="badge bg-success">Oui</span>
-                {% else %}
-                  <span class="badge bg-secondary">Non</span>
-                {% endif %}
-              </td>
-              <td>{{ arena.figures|length }}</td>
-              <td class="text-end">
-                <a class="btn btn-sm btn-outline-secondary"
-                   href="{{ path('app_arena_show', { id: arena.id }) }}">
-                  Voir
-                </a>
-                <a class="btn btn-sm btn-outline-primary"
-                   href="{{ path('app_arena_edit', { id: arena.id }) }}">
-                  Modifier
-                </a>
-              </td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+  <div class="row g-4">
+
+    {# ------------------- Carte Profil ------------------- #}
+    <div class="col-lg-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <h2 class="h5 mb-3">Mon profil</h2>
+
+          <p class="mb-1">
+            <strong>Email :</strong><br>
+            {{ member.email }}
+          </p>
+
+          <p class="text-muted small mb-3">
+            Gérez ici vos vitrines, vos figures et vos arenas.
+          </p>
+
+          <a href="{{ path('app_arena_index') }}"
+             class="btn btn-outline-secondary btn-sm w-100">
+            Voir les arenas publiques
+          </a>
+        </div>
+      </div>
     </div>
-  {% endif %}
+
+    {# ------------------- Colonne droite ------------------- #}
+    <div class="col-lg-8">
+      <div class="row g-4">
+
+        {# ------------------- Ma vitrine ------------------- #}
+        <div class="col-12">
+          <div class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h2 class="h5 mb-0">Ma vitrine</h2>
+            </div>
+
+            <div class="card-body">
+              {% if vitrine %}
+                <p class="mb-2">
+                  {{ vitrine.description ?: 'Sans description' }}
+                </p>
+
+                <p class="mb-3">
+                  <span class="badge bg-secondary">
+                    {{ vitrine.figures|length }} figures
+                  </span>
+                </p>
+
+                <div class="d-flex gap-2">
+                  <a class="btn btn-sm btn-outline-secondary w-50"
+                     href="{{ path('vitrine_show', { id: vitrine.id }) }}">
+                    Voir ma vitrine
+                  </a>
+                  <a class="btn btn-sm btn-primary w-50"
+                     href="{{ path('app_figure_new', { id: vitrine.id }) }}">
+                    + Ajouter une figure
+                  </a>
+                </div>
+
+              {% else %}
+                <div class="alert alert-warning mb-0">
+                  Vous n'avez pas encore de vitrine associée.
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        {# ------------------- Mes arenas ------------------- #}
+        <div class="col-12">
+          <div class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h2 class="h5 mb-0">Mes arenas</h2>
+
+              <a href="{{ path('app_arena_new', { id: member.id }) }}"
+                 class="btn btn-sm btn-primary">
+                Nouvelle arena
+              </a>
+            </div>
+
+            <div class="card-body">
+              {% if arenas is empty %}
+                <p class="text-muted mb-0">
+                  Aucune arena pour le moment. Créez-en une pour organiser vos combats de figures.
+                </p>
+
+              {% else %}
+                <div class="table-responsive">
+                  <table class="table table-sm align-middle mb-0">
+                    <thead>
+                      <tr>
+                        <th>ID</th>
+                        <th>Description</th>
+                        <th>Statut</th>
+                        <th>Figures</th>
+                        <th class="text-end">Actions</th>
+                      </tr>
+                    </thead>
+
+                    <tbody>
+                      {% for arena in arenas %}
+                        <tr>
+                          <td class="text-muted">{{ arena.id }}</td>
+                          <td>{{ arena.description }}</td>
+
+                          <td>
+                            {% if arena.publie %}
+                              <span class="badge bg-success">Publique</span>
+                            {% else %}
+                              <span class="badge bg-secondary">Privée</span>
+                            {% endif %}
+                          </td>
+
+                          <td>
+                            <span class="badge bg-secondary">
+                              {{ arena.figures|length }} figures
+                            </span>
+                          </td>
+
+                          <td class="text-end">
+                            <a href="{{ path('app_arena_show', { id: arena.id }) }}"
+                               class="btn btn-sm btn-outline-secondary">
+                              Voir
+                            </a>
+                            <a href="{{ path('app_arena_edit', { id: arena.id }) }}"
+                               class="btn btn-sm btn-outline-primary">
+                              Modifier
+                            </a>
+                          </td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+
+                  </table>
+                </div>
+
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
 </div>
 {% endblock %}

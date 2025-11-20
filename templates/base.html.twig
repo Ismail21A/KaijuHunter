@@ -21,6 +21,7 @@
     <body>
         {% block menu %}
         <!-- Navigation -->
+        {% set currentRoute = app.request.attributes.get('_route') %}
         <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
             <div class="container px-4 px-lg-5">
                 <a class="navbar-brand fw-bold" href="{{ path('home') }}">KaijuHunter</a>
@@ -29,15 +30,31 @@
                 </button>
 
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    {# Menu principal (conservé tel quel) #}
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4">
                         {{ render_bootstrap_menu('main') }}
                     </ul>
 
-                    {# Zone auth à droite #}
-                    <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                    {# Zone utilisateur / auth à droite #}
+                    <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
+
+                        {# Info utilisateur connecté (email + rôle) #}
+                        {% if app.user %}
+                            <li class="nav-item me-2">
+                                <span class="navbar-text small text-muted">
+                                    Connecté en tant que
+                                    <strong>{{ app.user.email ?? 'Utilisateur' }}</strong>
+                                    {% if 'ROLE_ADMIN' in app.user.roles %}
+                                        <span class="badge bg-danger ms-1">Admin</span>
+                                    {% endif %}
+                                </span>
+                            </li>
+                        {% endif %}
+
                         {% if app.user %}
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ path('app_member_show', { id: app.user.id }) }}">
+                                <a class="nav-link {% if currentRoute starts with 'app_member_' %}active{% endif %}"
+                                   href="{{ path('app_member_show', { id: app.user.id }) }}">
                                     Mon espace
                                 </a>
                             </li>
@@ -48,7 +65,8 @@
                             </li>
                         {% else %}
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ path('app_login') }}">
+                                <a class="nav-link {% if currentRoute == 'app_login' %}active{% endif %}"
+                                   href="{{ path('app_login') }}">
                                     Se connecter
                                 </a>
                             </li>

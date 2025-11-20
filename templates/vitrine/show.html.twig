@@ -5,17 +5,24 @@
 {% block body %}
 <div class="container py-4">
 
-  {# Lien back vers le membre propriétaire si dispo #}
-  {% if vitrine.owner %}
-    <a href="{{ path('app_member_show', { id: vitrine.owner.id }) }}"
-       class="btn btn-outline-secondary btn-sm mb-3">
-      ← Retour au membre
-    </a>
-  {% else %}
-    <a href="{{ path('vitrine_index') }}" class="btn btn-outline-secondary btn-sm mb-3">
-      ← Retour à la liste des vitrines
-    </a>
-  {% endif %}
+  {# Breadcrumb #}
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item">
+        <a href="{{ path('home') }}">Accueil</a>
+      </li>
+      {% if vitrine.owner %}
+        <li class="breadcrumb-item">
+          <a href="{{ path('app_member_show', { id: vitrine.owner.id }) }}">
+            Espace de {{ vitrine.owner.email }}
+          </a>
+        </li>
+      {% endif %}
+      <li class="breadcrumb-item active" aria-current="page">
+        Vitrine #{{ vitrine.id }}
+      </li>
+    </ol>
+  </nav>
 
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h1 class="h3 mb-0">Vitrine #{{ vitrine.id }}</h1>
@@ -41,7 +48,6 @@
   <div class="d-flex justify-content-between align-items-center mb-2">
     <h2 class="h5 mb-0">Figures dans cette vitrine</h2>
 
-    {# Bouton d'ajout contextuel - on le branche en 14.2 #}
     <a class="btn btn-sm btn-primary"
        href="{{ path('app_figure_new', { id: vitrine.id }) }}">
       + Ajouter une nouvelle figure
@@ -53,31 +59,39 @@
       Aucune figure dans cette vitrine pour le moment.
     </div>
   {% else %}
-    <div class="table-responsive mt-3">
-      <table class="table table-striped align-middle">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Nom</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for figure in vitrine.figures %}
-            <tr>
-              <td>{{ figure.id }}</td>
-              <td>{{ figure.name }}</td>
-              <td class="text-end">
-                <a class="btn btn-sm btn-outline-secondary"
-                   href="{{ path('app_figure_show', { id: figure.id }) }}">
-                  Voir
-                </a>
-              </td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+
+    {# Grid of cards #}
+    <div class="row g-4 mt-2">
+      {% for figure in vitrine.figures %}
+        <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+          <div class="card shadow-sm h-100">
+            {% if figure.imageName %}
+              <img 
+                src="/uploads/figures/{{ figure.imageName }}"
+                alt="{{ figure.name }}"
+                class="card-img-top"
+                style="height:180px; object-fit:cover;"
+              >
+            {% else %}
+              <div class="d-flex align-items-center justify-content-center bg-light"
+                   style="height:180px;">
+                <span class="text-muted small">Aucune image</span>
+              </div>
+            {% endif %}
+
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title">{{ figure.name }}</h5>
+
+              <a href="{{ path('app_figure_show', { id: figure.id }) }}"
+                 class="btn btn-sm btn-outline-primary mt-auto">
+                Voir
+              </a>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
     </div>
+
   {% endif %}
 
 </div>
