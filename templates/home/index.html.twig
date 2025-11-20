@@ -10,7 +10,9 @@
         <div class="col-md-7">
             <h1 class="display-5 fw-bold mb-3">KaijuHunter</h1>
             <p class="lead text-muted mb-4">
-                Gérez vos vitrines, figures et arenas dans un univers inspiré de Kaiju No. 8 & Solo Leveling.
+                Gérez vos <strong>vitrines</strong>, vos <strong>figures</strong> et vos
+                <strong>arenas</strong> dans un univers inspiré de <em>Kaiju No. 8</em> et
+                <em>Solo Leveling</em>.
             </p>
 
             <div class="d-flex flex-wrap gap-2">
@@ -25,7 +27,7 @@
                     </a>
                 {% else %}
                     <a href="{{ path('app_login') }}" class="btn btn-outline-secondary btn-lg">
-                        Me connecter pour gérer mes vitrines
+                        Me connecter
                     </a>
                 {% endif %}
             </div>
@@ -34,14 +36,23 @@
         <div class="col-md-5 mt-4 mt-md-0">
             <div class="card shadow-sm border-0">
                 <div class="card-body">
-                    <h2 class="h5 mb-3">Connexion rapide (démo)</h2>
+                    <h2 class="h5 mb-3">Comptes de démonstration</h2>
                     <p class="small text-muted mb-2">
-                        Comptes pré-configurés pour tester l’application :
+                        Utilisez ces identifiants pour tester KaijuHunter :
                     </p>
                     <ul class="list-unstyled small mb-0">
-                        <li><strong>Admin</strong> : admin@localhost / admin123</li>
-                        <li><strong>Membre</strong> : olivier@localhost / 123456</li>
-                        <li><strong>Membre</strong> : slash@localhost / 123456</li>
+                        <li>
+                            <strong>Admin</strong> :
+                            <code>admin@localhost</code> / <code>admin123</code>
+                        </li>
+                        <li>
+                            <strong>Membre</strong> :
+                            <code>olivier@localhost</code> / <code>123456</code>
+                        </li>
+                        <li>
+                            <strong>Membre</strong> :
+                            <code>slash@localhost</code> / <code>123456</code>
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -86,8 +97,9 @@
         <div class="alert alert-light border d-flex align-items-center">
             <i class="bi bi-info-circle me-2"></i>
             <div class="small text-muted">
-                Aucune arena publique en avant pour le moment. Connectez-vous avec
-                <strong>olivier@localhost</strong> ou <strong>slash@localhost</strong> pour en créer.
+                Aucune arena publique en avant pour le moment.
+                Connectez-vous avec <strong>olivier@localhost</strong> ou
+                <strong>slash@localhost</strong> pour en créer.
             </div>
         </div>
     {% endif %}

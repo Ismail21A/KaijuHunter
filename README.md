@@ -1,182 +1,331 @@
 # KaijuHunter
-Projet Symfony — Gestion d’inventaire de figures
+
+KaijuHunter est une application Symfony permettant de gérer une collection de **figures** rangées dans une **vitrine personnelle**, et de créer des **arenas** (publiques ou privées) qui regroupent certaines figures.
+L’univers s’inspire librement de Kaiju No. 8 et Solo Leveling.
+
+L’objectif pédagogique est de couvrir :
+
+* la modélisation de données avec Doctrine (relations 1–N et N–N),
+* les opérations CRUD contextualisées,
+* l’authentification / autorisations,
+* l’upload d’images,
+* un frontend cohérent basé sur Bootstrap.
 
 ---
 
-## Description
-KaijuHunter est une application web Symfony 6 / Doctrine ORM pour gérer des figures rangées dans des vitrines :
+## 1. Modèle fonctionnel
 
-- Figure : name (string), imageName (string), relation vitrine (ManyToOne), participation à des arenas (ManyToMany)
-- Vitrine : description (string/texte), collection figures (OneToMany), propriétaire (Member)
-- Arena : description, flag publie (bool), propriétaire (Member), collection de figures (ManyToMany)
+### 1.1. Membre (`Member`)
 
-L’application intègre maintenant :
-- un système complet d’authentification (login/logout, rôles)  
-- rôles : `ROLE_USER` + `ROLE_ADMIN`  
-- un accès contextuel aux données selon l’utilisateur connecté  
-- un CRUD contextualisé (Figures → Vitrine / Arenas → Member)  
-- un contrôle d’accès aux éléments privés (arenas non publiées, vitrines d’un utilisateur, etc.)  
-- un upload d’images pour les Figures  
-- un jeu de Fixtures complet incluant un admin + deux utilisateurs réels
+Représente un utilisateur de l’application.
 
-Cette étape intègre Bootstrap via la distribution Start Bootstrap – Shop Homepage et met en place des gabarits Twig minimalistes.
+Champs principaux :
 
----
+* `id`
+* `email`
+* `password`
+* `roles` (tableau, inclut au moins `ROLE_USER`)
+* `vitrine` : vitrine personnelle (relation OneToOne vers `Vitrine`)
+* `arenas` : arenas qu’il a créées (OneToMany)
 
-## Prérequis
-- PHP compatible Symfony (≥ 8.1 recommandé)
-- Composer
-- Symfony CLI (recommandé)
-- Base de données configurée (SQLite en dev possible)
-- Optionnel : Migrations/fixtures prêtes si besoin
-- Extension fileinfo activée (pour upload d’images)
+Particularités :
 
----
+* un membre se connecte avec `email` + `mot de passe`,
+* chaque membre possède **une seule vitrine**,
+* les droits (lecture / écriture) sur vitrine, figures et arenas dépendent de ce membre et de ses rôles,
+* l’admin a tous les droits sur toutes les données.
 
-## Structure actuelle (principaux fichiers)
+### 1.2. Vitrine / Inventaire (`Vitrine`)
 
-### **Contrôleurs**
-- `src/Controller/HomeController.php` → route home (/)  
-- `src/Controller/SecurityController.php` → login/logout  
-- `src/Controller/FigureController.php` → CRUD + image upload + contextualisation Vitrine  
-- `src/Controller/VitrineController.php` → vitrine_index (/vitrines), vitrine_show (/vitrines/{id})  
-- `src/Controller/ArenaController.php` → index/show/new/edit/delete + contrôle d’accès
+Une vitrine (inventaire) est l’espace personnel où un **membre** range ses figures.
 
-### **Gabarits Twig**
-- `templates/base.html.twig` (liens CSS/JS, menu, login/logout, flash messages)  
-- `templates/security/login.html.twig`  
-- `templates/home/index.html.twig`  
-- `templates/figure/index.html.twig`, `templates/figure/show.html.twig`  
-- `templates/vitrine/index.html.twig`, `templates/vitrine/show.html.twig`  
-- `templates/arena/index.html.twig`, `templates/arena/show.html.twig`, `templates/arena/figure_show.html.twig`
+Champs principaux :
 
-### **Intégration Start Bootstrap**
-- `public/startbootstrap-shop-homepage-gh-pages/` (css/styles.css, js/scripts.js, etc.)
-- `config/packages/framework.yaml` → `assets.base_path: '/startbootstrap-shop-homepage-gh-pages'`
+* `id`
+* `description`
+* `owner` : membre propriétaire (relation OneToOne vers `Member`)
+* `figures` : figures contenues dans cette vitrine (OneToMany vers `Figure`)
+* éventuelle image optionnelle selon l’implémentation (`imageFilename`)
 
-### **Menu Bootstrap**
-- `config/packages/bootstrap_menu.yaml`
-- Bundle : `camurphy/bootstrap-menu-bundle`
+Règles d’accès :
 
-### **Fixtures**
-- `AppFixtures.php` → 1 admin + 2 utilisateurs + vitrines + figures + arenas (publiées & privées)
+* un membre ne peut voir et modifier **que sa propre vitrine**,
+* un administrateur (`ROLE_ADMIN`) peut voir / modifier toutes les vitrines.
 
----
+### 1.3. Figure / Objet (`Figure`)
 
-## Installation et exécution
+Une figure est un objet de collection appartenant à une vitrine.
 
-### 1) Dépendances
-    composer install
+Champs principaux :
 
-### 2) Base de données (développement)
-    symfony console doctrine:database:create
-    symfony console doctrine:schema:create
-    # ou via migrations :
-    # symfony console doctrine:migrations:migrate
-    # Charger les fixtures :
-    symfony console doctrine:fixtures:load
+* `id`
+* `name`
+* `vitrine` : vitrine à laquelle la figure appartient (ManyToOne)
+* `arenas` : arenas dans lesquelles la figure apparaît (ManyToMany)
+* `imageName` : fichier image de la figure (upload)
 
-### 3) Intégrer Start Bootstrap (conformément au guide)
-Depuis la racine du projet :
+Contraintes :
 
-    cd public
-    wget https://github.com/startbootstrap/startbootstrap-shop-homepage/archive/gh-pages.zip
-    unzip gh-pages.zip
-    # → crée public/startbootstrap-shop-homepage-gh-pages/
+* chaque figure appartient à **une seule vitrine**,
+* une figure peut apparaître dans **plusieurs arenas**.
 
-Configurer Symfony pour pointer les assets du thème :
+### 1.4. Arena (`Arena`)
 
-config/packages/framework.yaml
+Une arena est un regroupement de figures, appartenant à un membre, et pouvant être :
 
-    framework:
-      assets:
-        base_path: '/startbootstrap-shop-homepage-gh-pages'
+* **publique** (visible par tous),
+* **privée** (visible uniquement par son créateur et l’admin).
 
-### 4) Menu Bootstrap
-Installer le bundle :
+Champs principaux :
 
-    symfony composer require camurphy/bootstrap-menu-bundle
+* `id`
+* `description`
+* `publie` (booléen)
+* `owner` : membre créateur
+* `figures` : liste de figures associées (ManyToMany)
 
-Configuration minimale :
+Règles d’accès :
 
-config/packages/bootstrap_menu.yaml
-
-    bootstrap_menu:
-      menus:
-        main:
-          items:
-            home:     { label: 'Accueil', route: 'home' }
-            figures:  { label: 'Figures', route: 'app_figure_index' }
-            vitrines: { label: 'Vitrines', route: 'vitrine_index' }
-            arenas:   { label: 'Arenas', route: 'app_arena_index' }
-
-### 5) Lancer le serveur
-
-    symfony server:start
-    # ou :
-    symfony serve -d
-
-Ouvrir :
-- / (Accueil)
-- /login
-- /vitrines
-- /arena
-- /figure
+* publique → visible par tous (y compris non connectés),
+* privée → visible par le créateur ou un admin,
+* édition / suppression → réservée au créateur ou à l’admin.
 
 ---
 
-## Étapes réalisées
-- [x] Squelette Symfony + Doctrine (SQLite dev)  
-- [x] Entités : Figure, Vitrine (owner), Member, Arena (publie + owner + figures)  
-- [x] Fixtures complètes (admin, olivier, slash + vitrines + figures + arenas)  
-- [x] Contrôleurs : Home / Figure / Vitrine / Arena avec routes nommées  
-- [x] Twig : base.html.twig + pages home, figure, vitrine, arena  
-- [x] Bootstrap via Start Bootstrap – Shop Homepage  
-- [x] Configuration assets : framework.assets.base_path  
-- [x] Menu Bootstrap (bundle + bootstrap_menu.yaml)  
-- [x] Upload d’images pour les Figures  
-- [x] CRUD contextualisé (Figures → Vitrine / Arenas → Member)  
-- [x] Redirections automatiques cohérentes (vers vitrine/owner)  
-- [x] Authentification (login/logout, hashing, provider Member)  
-- [x] Rôles : `ROLE_USER`, `ROLE_ADMIN`  
-- [x] Contrôle d’accès (admin / owner / public)  
-- [x] Filtrage automatique selon utilisateur (vitrines, figures, arenas)  
-- [x] Accès aux arenas privées réservé au propriétaire ou à l’admin  
+## 2. Installation locale
+
+### 2.1. Prérequis
+
+* PHP 8.1+
+* Composer
+* Symfony CLI (recommandé)
+* SQLite (par défaut) ou un autre SGBD compatible Doctrine
+* Node / npm (optionnel si tu veux recompiler du front custom)
+
+### 2.2. Cloner le projet
+
+```bash
+git clone https://github.com/Ismail21A/KaijuHunter.git
+cd KaijuHunter
+```
+
+### 2.3. Installer les dépendances PHP
+
+```bash
+composer install
+```
+
+### 2.4. Configuration de l’environnement
+
+Créer un fichier `.env.local` à la racine, au minimum pour la base de données, par exemple :
+
+```env
+APP_ENV=dev
+APP_DEBUG=1
+DATABASE_URL="sqlite:///%kernel.project_dir%/var/data.db"
+```
+
+Tu peux aussi configurer un autre SGBD (MySQL/PostgreSQL) en adaptant `DATABASE_URL`.
+
+### 2.5. Créer la base de données et appliquer les migrations
+
+```bash
+php bin/console doctrine:database:create
+php bin/console doctrine:migrations:migrate
+```
+
+### 2.6. Charger les données de test (fixtures)
+
+Les fixtures créent :
+
+* plusieurs membres (dont un admin),
+* leurs vitrines associées,
+* plusieurs figures,
+* des arenas publiques et privées.
+
+Commande :
+
+```bash
+php bin/console doctrine:fixtures:load
+```
+
+Confirmer l’écrasement des données si demandé.
+
+### 2.7. Lancer le serveur Symfony
+
+```bash
+symfony serve
+```
+
+L’application est alors accessible sur :
+
+* `http://127.0.0.1:8000`
 
 ---
 
-## Prochaines étapes
-- [ ] Améliorer l’organisation visuelle + UX (cards, grids, dashboard utilisateur)  
-- [ ] Pagination et recherche  
-- [ ] Validation entités + messages d’erreur  
-- [ ] Personnalisation légère du CSS  
-- [ ] Utiliser les Voters pour simplifier la logique d’accès  
+## 3. Comptes par défaut
+
+Les fixtures créent au moins les comptes suivants :
+
+### Administrateur
+
+* **Email** : `admin@localhost`
+* **Mot de passe** : `admin123`
+* **Rôle** : `ROLE_ADMIN`
+
+### Utilisateurs simples
+
+* **Email** : `Olivier@localhost` – mot de passe `123456` – `ROLE_USER`
+* **Email** : `Slash@localhost` – mot de passe `123456` – `ROLE_USER`
+
+L’admin (`admin@localhost`) peut :
+
+* voir / modifier toutes les vitrines,
+* voir / modifier toutes les figures,
+* voir / modifier toutes les arenas, y compris privées.
 
 ---
 
-## Dépannage rapide
+## 4. Navigation dans l’interface
 
-- **Route introuvable**  
-      bin/console debug:router | grep -E 'home|figure|vitrine|arena'
+### 4.1. Barre de navigation principale
 
-- **Classe contrôleur non trouvée**  
-  Vérifier namespace `App\Controller` et que le nom de classe = nom du fichier.
+En haut de chaque page, la navbar propose :
 
-- **Template introuvable**  
-  Vérifier le chemin `templates/...` et l’appel `return $this->render('...')`.
+* **Accueil** → route `home`
+* **Figures** → route `app_figure_index`
+* **Vitrine** → route `vitrine_show` (vitrine du membre connecté)
+* **Arenas** → route `app_arena_index`
 
-- **Page blanche**  
-  Contrôler les blocs Twig ({% block body %}), vider le cache :  
-  bin/console cache:clear
+À droite, selon l’état de connexion :
 
-- **Erreur d’accès (403)**  
-  Vérifier :  
-  - connexion utilisateur  
-  - rôle `ROLE_ADMIN` ou ownership  
-  - conditions `isGranted()` dans les contrôleurs  
+* Si **non connecté** :
+
+  * bouton **Connexion** → route `app_login`
+* Si **connecté** :
+
+  * bouton **Mon espace** → route `app_member_show` (profil du membre connecté)
+  * lien **Déconnexion** → route `app_logout`
+
+### 4.2. Page d’accueil (`/`)
+
+* Hero présentant **KaijuHunter**
+* Bouton **Explorer les arenas publiques** → `app_arena_index`
+* Bouton **Accéder à ma vitrine** → `vitrine_show` (si connecté)
+* Rappel des comptes de test
+
+### 4.3. Vitrine
+
+#### Vitrine personnelle — `/vitrine` ou `/vitrines/{id}` (`vitrine_show`)
+
+* Détails de la vitrine (description, éventuelle image, ID)
+* Liste des figures de cette vitrine, sous forme de cartes
+* Pour le propriétaire ou l’admin :
+
+  * bouton **Ajouter une figure**
+  * bouton **Modifier la vitrine**
+* Bouton **Retour à l’accueil**
+
+Accès :
+
+* propriétaire ou admin uniquement (un membre ne voit jamais la vitrine d’un autre).
+
+### 4.4. Figures
+
+#### Liste des figures — `/figure` (`app_figure_index`)
+
+* Grille de cartes avec :
+
+  * image de la figure,
+  * nom,
+  * vitrine associée,
+* (éventuel) champ de recherche pour filtrer **par nom**
+* Bouton **Nouvelle figure** (si connecté)
+
+Chaque carte propose :
+
+* un accès à la fiche figure,
+* un bouton **Modifier** (si autorisé).
+
+#### Détails d’une figure — `/figure/{id}` (`app_figure_show`)
+
+* Image principale
+* ID, nom, vitrine associée
+* Liste des arenas où apparaît la figure
+* Bouton **Modifier** (si propriétaire ou admin)
+* Formulaire de suppression (si autorisé)
+
+#### Création / édition de figure
+
+* Formulaire avec :
+
+  * nom,
+  * vitrine (fixée à la vitrine du membre, non modifiable ou filtrée),
+  * arenas possibles (filtrées selon le propriétaire),
+  * upload de l’image (avec contrainte de format/taille),
+* Preview de l’image choisie avant enregistrement.
+
+### 4.5. Arenas
+
+#### Liste des arenas — `/arena` (`app_arena_index`)
+
+* Tableau ou cartes listant :
+
+  * ID
+  * Description
+  * Statut (Publique / Privée)
+* Règles d’affichage :
+
+  * non connecté : uniquement les arenas **publiques**,
+  * membre connecté : arenas publiques + arenas qu’il possède,
+  * admin : toutes les arenas.
+* Actions :
+
+  * **Voir** : accessibles à tous selon les règles ci-dessus
+  * **Modifier** : visible seulement pour le créateur ou l’admin
+  * **Créer une nouvelle arena** (si connecté)
+
+#### Détails d’une arena — `/arena/{id}` (`app_arena_show`)
+
+* Description
+* Statut (publiée / privée)
+* Propriétaire
+* Liste des figures liées, cliquables
+* Si créateur ou admin :
+
+  * bouton **Modifier**
+  * bouton de suppression (formulaire avec CSRF)
+
+Les contrôles d’accès vérifient :
+
+* si l’arena est publique,
+* ou si le membre connecté en est le propriétaire,
+* ou s’il a le rôle `ROLE_ADMIN`.
 
 ---
+
+## 5. Structure des images
+
+Les images utilisées dans l’application sont stockées dans :
+
+* `public/uploads/figures/` → images des figures
+
+Les fixtures peuvent référencer des fichiers d’images prédéfinis.
+Il est possible de les remplacer par de vraies images en conservant les mêmes noms.
+
+---
+
+## 6. Résumé
+
+* **Backend** : modèle Doctrine propre, relations cohérentes (Member/Vitrine/Figure/Arena), sécurité appliquée par rôle et par propriétaire.
+* **Frontend** : Bootstrap, design cohérent, pages de listing et de détail lisibles.
+* **Admin** : le compte `adam@localhost` (mot de passe `000000`) dispose de tous les droits pour inspection et tests.
+
+KaijuHunter est prêt à être lancé en local pour démonstration, expérimentation ou extension (nouvelles arenas, nouveaux types de figures, etc.).
+ 
+ 
+ ---
 
 ## Auteur
-Projet pédagogique (CSC4101/CSC4102).  
+Projet pédagogique (CSC4101).  
 Développé par Ismail Abid — Encadrant : Olivier Berger.

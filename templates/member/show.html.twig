@@ -5,13 +5,6 @@
 {% block body %}
 <div class="container py-4">
 
-  {# Message admin si l’admin consulte un autre profil #}
-  {% if is_granted('ROLE_ADMIN') and app.user.id != member.id %}
-    <div class="alert alert-warning mb-4">
-      Vous consultez l’espace de <strong>{{ member.email }}</strong> en tant qu’administrateur.
-    </div>
-  {% endif %}
-
   {# En-tête / breadcrumb #}
   <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
@@ -25,17 +18,19 @@
           </li>
         </ol>
       </nav>
-      <h1 class="h3 mb-0">Espace de {{ member.email }}</h1>
+      <h1 class="h3 mb-0">Mon espace — {{ member.email }}</h1>
     </div>
 
-    <span class="badge {% if is_granted('ROLE_ADMIN') %}bg-danger{% else %}bg-primary{% endif %} px-3 py-2">
-      {% if is_granted('ROLE_ADMIN') %}Admin{% else %}Membre{% endif %}
-    </span>
+    {% if is_granted('ROLE_ADMIN') %}
+      <span class="badge bg-danger">Admin</span>
+    {% else %}
+      <span class="badge bg-primary">Membre</span>
+    {% endif %}
   </div>
 
   <div class="row g-4">
 
-    {# ------------------- Carte Profil ------------------- #}
+    {# Carte profil #}
     <div class="col-lg-4">
       <div class="card shadow-sm h-100">
         <div class="card-body">
@@ -47,51 +42,48 @@
           </p>
 
           <p class="text-muted small mb-3">
-            Gérez ici vos vitrines, vos figures et vos arenas.
+            Cet espace regroupe vos vitrines, vos figures et vos arenas
+            dans l’univers KaijuHunter.
           </p>
 
           <a href="{{ path('app_arena_index') }}"
-             class="btn btn-outline-secondary btn-sm w-100">
-            Voir les arenas publiques
+             class="btn btn-outline-secondary btn-sm">
+            Voir les Arenas publiques
           </a>
         </div>
       </div>
     </div>
 
-    {# ------------------- Colonne droite ------------------- #}
+    {# Vitrine + Arenas #}
     <div class="col-lg-8">
       <div class="row g-4">
 
-        {# ------------------- Ma vitrine ------------------- #}
+        {# Ma vitrine #}
         <div class="col-12">
           <div class="card shadow-sm">
             <div class="card-header d-flex justify-content-between align-items-center">
               <h2 class="h5 mb-0">Ma vitrine</h2>
             </div>
-
             <div class="card-body">
               {% if vitrine %}
                 <p class="mb-2">
                   {{ vitrine.description ?: 'Sans description' }}
                 </p>
-
                 <p class="mb-3">
                   <span class="badge bg-secondary">
                     {{ vitrine.figures|length }} figures
                   </span>
                 </p>
-
                 <div class="d-flex gap-2">
-                  <a class="btn btn-sm btn-outline-secondary w-50"
+                  <a class="btn btn-sm btn-outline-secondary"
                      href="{{ path('vitrine_show', { id: vitrine.id }) }}">
                     Voir ma vitrine
                   </a>
-                  <a class="btn btn-sm btn-primary w-50"
+                  <a class="btn btn-sm btn-primary"
                      href="{{ path('app_figure_new', { id: vitrine.id }) }}">
                     + Ajouter une figure
                   </a>
                 </div>
-
               {% else %}
                 <div class="alert alert-warning mb-0">
                   Vous n'avez pas encore de vitrine associée.
@@ -101,24 +93,21 @@
           </div>
         </div>
 
-        {# ------------------- Mes arenas ------------------- #}
+        {# Mes arenas #}
         <div class="col-12">
           <div class="card shadow-sm">
             <div class="card-header d-flex justify-content-between align-items-center">
-              <h2 class="h5 mb-0">Mes arenas</h2>
-
+              <h2 class="h5 mb-0">Mes Arenas</h2>
               <a href="{{ path('app_arena_new', { id: member.id }) }}"
                  class="btn btn-sm btn-primary">
-                Nouvelle arena
+                Nouvelle Arena
               </a>
             </div>
-
             <div class="card-body">
               {% if arenas is empty %}
                 <p class="text-muted mb-0">
-                  Aucune arena pour le moment. Créez-en une pour organiser vos combats de figures.
+                  Aucune Arena pour le moment. Créez-en une pour mettre en scène vos figures.
                 </p>
-
               {% else %}
                 <div class="table-responsive">
                   <table class="table table-sm align-middle mb-0">
@@ -131,13 +120,11 @@
                         <th class="text-end">Actions</th>
                       </tr>
                     </thead>
-
                     <tbody>
                       {% for arena in arenas %}
                         <tr>
                           <td class="text-muted">{{ arena.id }}</td>
                           <td>{{ arena.description }}</td>
-
                           <td>
                             {% if arena.publie %}
                               <span class="badge bg-success">Publique</span>
@@ -145,13 +132,11 @@
                               <span class="badge bg-secondary">Privée</span>
                             {% endif %}
                           </td>
-
                           <td>
                             <span class="badge bg-secondary">
                               {{ arena.figures|length }} figures
                             </span>
                           </td>
-
                           <td class="text-end">
                             <a href="{{ path('app_arena_show', { id: arena.id }) }}"
                                class="btn btn-sm btn-outline-secondary">
@@ -165,10 +150,8 @@
                         </tr>
                       {% endfor %}
                     </tbody>
-
                   </table>
                 </div>
-
               {% endif %}
             </div>
           </div>
@@ -176,6 +159,7 @@
 
       </div>
     </div>
+
   </div>
 
 </div>

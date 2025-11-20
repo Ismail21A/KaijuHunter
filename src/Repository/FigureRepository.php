@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Figure;
 use App\Entity\Member;
+use App\Entity\Arena;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -15,6 +16,46 @@ class FigureRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Figure::class);
+    }
+    
+    /**
+     * Ajoute une figure (méthode standard du maker)
+     */
+    public function add(Figure $entity, bool $flush = false): void
+    {
+        $this->getEntityManager()->persist($entity);
+        
+        if ($flush) {
+            $this->getEntityManager()->flush();
+        }
+    }
+    
+    /**
+     * Suppression propre d'une figure :
+     * - enlève la Figure de toutes les Arenas associées (ManyToMany)
+     * - puis supprime la Figure elle-même
+     */
+    public function remove(Figure $entity, bool $flush = false): void
+    {
+        $em = $this->getEntityManager();
+        
+        // 1) Nettoyer la relation ManyToMany Figure <-> Arena
+        foreach ($entity->getArenas() as $arena) {
+            /** @var Arena $arena */
+            $arena->removeFigure($entity);
+            $em->persist($arena);
+        }
+        
+        if ($flush) {
+            $em->flush();
+        }
+        
+        // 2) Supprimer la figure elle-même
+        $em->remove($entity);
+        
+        if ($flush) {
+            $em->flush();
+        }
     }
     
     /**

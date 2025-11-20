@@ -186,41 +186,46 @@ final class FigureController extends AbstractController
     }
     
     #[Route('/{id}', name: 'app_figure_delete', methods: ['POST'])]
-    public function delete(Request $request, Figure $figure, EntityManagerInterface $entityManager): Response
-    {
-        // 19.2 — suppression : owner ou admin
-        $hasAccess = false;
-        
-        if ($this->isGranted('ROLE_ADMIN')) {
-            $hasAccess = true;
-        } else {
-            /** @var Member|null $current */
-            $current = $this->getUser();
+    public function delete(
+        Request $request,
+        Figure $figure,
+        EntityManagerInterface $entityManager,
+        FigureRepository $figureRepository
+        ): Response {
+            // 19.2 — suppression : owner ou admin
+            $hasAccess = false;
+            
+            if ($this->isGranted('ROLE_ADMIN')) {
+                $hasAccess = true;
+            } else {
+                /** @var Member|null $current */
+                $current = $this->getUser();
+                $vitrine = $figure->getVitrine();
+                
+                if ($current instanceof Member && $vitrine && $vitrine->getOwner() === $current) {
+                    $hasAccess = true;
+                }
+            }
+            
+            if (!$hasAccess) {
+                throw $this->createAccessDeniedException("You cannot delete another member's figure.");
+            }
+            
+            // On garde la vitrine avant de supprimer
             $vitrine = $figure->getVitrine();
             
-            if ($current instanceof Member && $vitrine && $vitrine->getOwner() === $current) {
-                $hasAccess = true;
+            if ($this->isCsrfTokenValid('delete' . $figure->getId(), $request->getPayload()->getString('_token'))) {
+                // IMPORTANT : on passe par le repository pour déclencher
+                // la suppression propre (ManyToMany avec les arenas, etc.)
+                $figureRepository->remove($figure, true);
             }
-        }
-        
-        if (!$hasAccess) {
-            throw $this->createAccessDeniedException("You cannot delete another member's figure.");
-        }
-        
-        // On garde la vitrine avant de supprimer
-        $vitrine = $figure->getVitrine();
-        
-        if ($this->isCsrfTokenValid('delete' . $figure->getId(), $request->getPayload()->getString('_token'))) {
-            $entityManager->remove($figure);
-            $entityManager->flush();
-        }
-        
-        if ($vitrine) {
-            return $this->redirectToRoute('vitrine_show', [
-                'id' => $vitrine->getId(),
-            ], Response::HTTP_SEE_OTHER);
-        }
-        
-        return $this->redirectToRoute('app_figure_index', [], Response::HTTP_SEE_OTHER);
+            
+            if ($vitrine) {
+                return $this->redirectToRoute('vitrine_show', [
+                    'id' => $vitrine->getId(),
+                ], Response::HTTP_SEE_OTHER);
+            }
+            
+            return $this->redirectToRoute('app_figure_index', [], Response::HTTP_SEE_OTHER);
     }
 }

@@ -35,14 +35,17 @@ class FigureType extends AbstractType
             'multiple'     => true,
             'required'     => false,
             'label'        => 'Arènes associées',
+            // IMPORTANT: utilise addArena()/removeArena() -> synchronise aussi Arena::figures
+            'by_reference' => false,
         ])
         
-        // 🔥 New field: Image upload
+        // Image upload (non mappé)
         ->add('imageFile', FileType::class, [
             'label'    => 'Image de la figure',
-            'mapped'   => false,   // important: this field is NOT mapped to the entity
-            'required' => false,   // optional on edit
-        ]);
+            'mapped'   => false,
+            'required' => false,
+        ])
+        ;
     }
     
     public function configureOptions(OptionsResolver $resolver): void
