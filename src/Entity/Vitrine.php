@@ -70,7 +70,6 @@ class Vitrine
     public function removeFigure(Figure $figure): static
     {
         if ($this->figures->removeElement($figure)) {
-            // set the owning side to null (unless already changed)
             if ($figure->getVitrine() === $this) {
                 $figure->setVitrine(null);
             }

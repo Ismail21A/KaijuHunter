@@ -14,7 +14,6 @@
     {{ form_errors(form.publie) }}
   </div>
 
-  {# If the generated form contains 'owner' and/or 'figures', we keep them visible as per the guide's scope #}
   {% if form.owner is defined %}
     <div class="col-12">
       {{ form_label(form.owner, null, {'label_attr': {'class': 'form-label'}}) }}

@@ -23,20 +23,18 @@ class ArenaType extends AbstractType
         ->add('description')
         ->add('publie')
         
-        // 👤 Owner affiché mais non modifiable
         ->add('owner', EntityType::class, [
             'class'        => Member::class,
-            'choice_label' => 'email', // on affiche l’email du membre
-            'disabled'     => true,    // pas modifiable
+            'choice_label' => 'email', 
+            'disabled'     => true,    
         ])
         
-        // 🧩 Figures de l’Arena, filtrées par le owner (via vitrine)
         ->add('figures', EntityType::class, [
             'class'         => Figure::class,
             'choice_label'  => 'name',
             'multiple'      => true,
-            'expanded'      => true,   // checkboxes
-            'by_reference'  => false,  // utilise addFigure()/removeFigure()
+            'expanded'      => true,   
+            'by_reference'  => false,  
             
             'query_builder' => function (FigureRepository $fr) use ($owner) {
             $qb = $fr->createQueryBuilder('f');
@@ -48,7 +46,6 @@ class ArenaType extends AbstractType
                 ->andWhere('m = :owner')
                 ->setParameter('owner', $owner);
             } else {
-                // Pas de owner → aucune figure proposée
                 $qb->where('1 = 0');
             }
             

@@ -30,15 +30,12 @@
                 </button>
 
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                    {# Menu principal (conservé tel quel) #}
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4">
                         {{ render_bootstrap_menu('main') }}
                     </ul>
 
-                    {# Zone utilisateur / auth à droite #}
                     <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
 
-                        {# Info utilisateur connecté (email + rôle) #}
                         {% if app.user %}
                             <li class="nav-item me-2">
                                 <span class="navbar-text small text-muted">
@@ -77,7 +74,6 @@
         </nav>
         {% endblock %}
 
-        {# Flash messages #}
         {% for label, messages in app.flashes %}
           {% for message in messages %}
             <div class="alert alert-{{ label }} text-center m-0 rounded-0">

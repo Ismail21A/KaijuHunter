@@ -21,7 +21,6 @@ final class FigureController extends AbstractController
     #[Route(name: 'app_figure_index', methods: ['GET'])]
     public function index(FigureRepository $figureRepository): Response
     {
-        // Admin : voit toutes les figures
         if ($this->isGranted('ROLE_ADMIN')) {
             $figures = $figureRepository->findAll();
             
@@ -33,12 +32,10 @@ final class FigureController extends AbstractController
         /** @var Member|null $member */
         $member = $this->getUser();
         
-        // Utilisateur non connecté : on le renvoie vers le login
         if (!$member) {
             return $this->redirectToRoute('app_login');
         }
         
-        // Utilisateur normal : seulement ses figures
         $figures = $figureRepository->findMemberFigures($member);
         
         return $this->render('figure/index.html.twig', [
@@ -52,7 +49,6 @@ final class FigureController extends AbstractController
         /** @var Member|null $current */
         $current = $this->getUser();
         
-        // 19.2 — création : réservée au propriétaire de la vitrine ou à l’admin
         $hasAccess = $this->isGranted('ROLE_ADMIN');
         if (!$hasAccess && $current instanceof Member && $vitrine->getOwner() === $current) {
             $hasAccess = true;
@@ -63,7 +59,6 @@ final class FigureController extends AbstractController
         }
         
         $figure = new Figure();
-        // Contextualisation : la figure appartient à cette vitrine
         $figure->setVitrine($vitrine);
         
         $form = $this->createForm(FigureType::class, $figure);
@@ -80,7 +75,6 @@ final class FigureController extends AbstractController
                 
                 try {
                     $imageFile->move($uploadsDir, $newFilename);
-                    // on garde exactement la même logique que chez toi
                     $figure->setImageName($newFilename);
                 } catch (FileException $e) {
                     $this->addFlash('error', 'Upload de l’image impossible.');
@@ -90,7 +84,6 @@ final class FigureController extends AbstractController
             $entityManager->persist($figure);
             $entityManager->flush();
             
-            // Retour vers la vitrine concernée
             return $this->redirectToRoute('vitrine_show', [
                 'id' => $vitrine->getId(),
             ], Response::HTTP_SEE_OTHER);
@@ -105,7 +98,6 @@ final class FigureController extends AbstractController
     #[Route('/{id}', name: 'app_figure_show', methods: ['GET'])]
     public function show(Figure $figure): Response
     {
-        // 19.1 — consultation : owner ou admin
         $hasAccess = false;
         
         if ($this->isGranted('ROLE_ADMIN')) {
@@ -132,7 +124,6 @@ final class FigureController extends AbstractController
     #[Route('/{id}/edit', name: 'app_figure_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Figure $figure, EntityManagerInterface $entityManager): Response
     {
-        // 19.2 — modification : owner ou admin
         $hasAccess = false;
         
         if ($this->isGranted('ROLE_ADMIN')) {
@@ -173,7 +164,6 @@ final class FigureController extends AbstractController
             
             $entityManager->flush();
             
-            // Après update : on reste sur la page de la figure
             return $this->redirectToRoute('app_figure_show', [
                 'id' => $figure->getId(),
             ], Response::HTTP_SEE_OTHER);
@@ -192,7 +182,6 @@ final class FigureController extends AbstractController
         EntityManagerInterface $entityManager,
         FigureRepository $figureRepository
         ): Response {
-            // 19.2 — suppression : owner ou admin
             $hasAccess = false;
             
             if ($this->isGranted('ROLE_ADMIN')) {
@@ -211,12 +200,9 @@ final class FigureController extends AbstractController
                 throw $this->createAccessDeniedException("You cannot delete another member's figure.");
             }
             
-            // On garde la vitrine avant de supprimer
             $vitrine = $figure->getVitrine();
             
             if ($this->isCsrfTokenValid('delete' . $figure->getId(), $request->getPayload()->getString('_token'))) {
-                // IMPORTANT : on passe par le repository pour déclencher
-                // la suppression propre (ManyToMany avec les arenas, etc.)
                 $figureRepository->remove($figure, true);
             }
             

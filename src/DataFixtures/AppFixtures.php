@@ -48,7 +48,6 @@ class AppFixtures extends Fixture
             ],
         ];
         
-        // Création des Members
         foreach ($membersData as $m) {
             $member = new Member();
             $member->setEmail($m['email']);
@@ -65,11 +64,9 @@ class AppFixtures extends Fixture
          * Pool commun de personnages
          */
         $characterPool = [
-            // Kaiju No. 8
             'Kafka Hibino', 'Mina Ashiro', 'Reno Ichikawa', 'Kikoru Shinomiya', 'Soshiro Hoshina',
             'Isao Shinomiya', 'Kaiju No. 9',
             
-            // Solo Leveling
             'Sung Jinwoo', 'Cha Hae-In', 'Yoo Jinho', 'Go Gunhee',
             'Thomas Andre', 'Liu Zhigang', 'Christopher Reed',
             'Beru', 'Igris', 'Bellion',
@@ -104,7 +101,6 @@ class AppFixtures extends Fixture
             /** @var Vitrine $vitrine */
             $vitrine = $this->getReference('vitrine.' . $key, Vitrine::class);
             
-            // offset pour varier les noms entre membres
             $startOffset = ($index * 3) % $poolSize;
             
             for ($i = 0; $i < $nbFiguresPerMember; $i++) {
@@ -133,7 +129,6 @@ class AppFixtures extends Fixture
             $pair = $arenaNamePairs[$i % count($arenaNamePairs)];
             [$name1, $name2] = $pair;
             
-            // Arena 1 (publique)
             $arena1 = new Arena();
             $arena1->setDescription($name1 . ' — curated by ' . ucfirst($key));
             $arena1->setPublie(true);
@@ -143,7 +138,6 @@ class AppFixtures extends Fixture
             $arena1->addFigure($this->getReference('figure.' . $key . '.3', Figure::class));
             $manager->persist($arena1);
             
-            // Arena 2 (privée)
             $arena2 = new Arena();
             $arena2->setDescription($name2 . ' — curated by ' . ucfirst($key));
             $arena2->setPublie(false);

@@ -20,7 +20,6 @@ class FigureType extends AbstractType
             'label' => 'Nom de la figure',
         ])
         
-        // Vitrine : affichée mais non modifiable
         ->add('vitrine', EntityType::class, [
             'class'        => Vitrine::class,
             'choice_label' => 'id',
@@ -28,18 +27,15 @@ class FigureType extends AbstractType
             'disabled'     => true,
         ])
         
-        // Arènes liées (ManyToMany)
         ->add('arenas', EntityType::class, [
             'class'        => Arena::class,
             'choice_label' => 'id',
             'multiple'     => true,
             'required'     => false,
             'label'        => 'Arènes associées',
-            // IMPORTANT: utilise addArena()/removeArena() -> synchronise aussi Arena::figures
             'by_reference' => false,
         ])
         
-        // Image upload (non mappé)
         ->add('imageFile', FileType::class, [
             'label'    => 'Image de la figure',
             'mapped'   => false,

@@ -5,7 +5,6 @@
 {% block body %}
 <div class="container py-4">
 
-    {# Breadcrumb #}
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ path('home') }}">Accueil</a></li>
@@ -27,7 +26,6 @@
 
     <div class="row g-4">
         
-        {# Image #}
         <div class="col-md-6">
             <div class="card shadow-sm h-100">
                 {% if figure.imageName %}
@@ -44,7 +42,6 @@
             </div>
         </div>
 
-        {# Infos #}
         <div class="col-md-6">
             <div class="card shadow-sm h-100">
                 <div class="card-body">

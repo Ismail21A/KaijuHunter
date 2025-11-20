@@ -29,7 +29,7 @@ class Figure
     private Collection $arenas;
     
     #[ORM\Column(length: 255, nullable: true)]
-    private ?string $imageName = null;   // <- NEW FIELD
+    private ?string $imageName = null;   
     
     public function __construct()
     {
@@ -92,7 +92,6 @@ class Figure
         return $this;
     }
     
-    // ------------ NEW GETTER / SETTER FOR imageName ------------
     
     public function getImageName(): ?string
     {

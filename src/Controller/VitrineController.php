@@ -16,7 +16,6 @@ final class VitrineController extends AbstractController
     #[Route('', name: 'vitrine_index', methods: ['GET'])]
     public function index(VitrineRepository $vitrineRepository): Response
     {
-        // Admin : voit toutes les vitrines
         if ($this->isGranted('ROLE_ADMIN')) {
             $vitrines = $vitrineRepository->findAll();
             
@@ -28,12 +27,10 @@ final class VitrineController extends AbstractController
         /** @var Member|null $member */
         $member = $this->getUser();
         
-        // Utilisateur non connecté : on le renvoie vers le login
         if (! $member) {
             return $this->redirectToRoute('app_login');
         }
         
-        // Utilisateur normal : uniquement les vitrines dont il est owner
         $vitrines = $vitrineRepository->findBy([
             'owner' => $member,
         ]);
@@ -56,7 +53,6 @@ final class VitrineController extends AbstractController
         /** @var Member|null $current */
         $current = $this->getUser();
         
-        // Seul l’admin ou le propriétaire peut voir la vitrine
         if (
             ! $this->isGranted('ROLE_ADMIN') &&
             (

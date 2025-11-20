@@ -29,22 +29,17 @@ final class ArenaController extends AbstractController
         /** @var Member|null $member */
         $member = $this->getUser();
         
-        // Vérification explicite du rôle admin
         $isAdmin = $member instanceof Member
         && \in_array('ROLE_ADMIN', $member->getRoles(), true);
         
         if ($isAdmin) {
-            // Admin : voit toutes les arenas, publiées ou non
             $arenas = $arenaRepository->findAll();
         } else {
-            // Arenas publiques visibles par tout le monde
             $publicArenas = $arenaRepository->findBy(['publie' => true]);
             
-            // Utilisateur non connecté : uniquement les publiques
             if (!$member) {
                 $arenas = $publicArenas;
             } else {
-                // Utilisateur connecté : publiques + ses privées
                 $privateArenas = $arenaRepository->findBy([
                     'publie' => false,
                     'owner'  => $member,
@@ -69,7 +64,6 @@ final class ArenaController extends AbstractController
             /** @var Member|null $current */
             $current = $this->getUser();
             
-            // 19.2 — création : owner ou admin
             $hasAccess = $this->isGranted('ROLE_ADMIN');
             if (!$hasAccess && $current instanceof Member && $current->getId() === $member->getId()) {
                 $hasAccess = true;
@@ -105,7 +99,6 @@ final class ArenaController extends AbstractController
     #[Route('/{id}', name: 'app_arena_show', methods: ['GET'])]
     public function show(Arena $arena): Response
     {
-        // 19.3 — accès aux arenas non publiées : owner ou admin
         $hasAccess = false;
         
         if ($this->isGranted('ROLE_ADMIN') || $arena->isPublie()) {
@@ -133,7 +126,6 @@ final class ArenaController extends AbstractController
         Arena $arena,
         EntityManagerInterface $entityManager
         ): Response {
-            // 19.2 — modification : owner ou admin
             $hasAccess = false;
             
             if ($this->isGranted('ROLE_ADMIN')) {
@@ -156,7 +148,6 @@ final class ArenaController extends AbstractController
             if ($form->isSubmitted() && $form->isValid()) {
                 $entityManager->flush();
                 
-                // Après édition : rester sur la page de l’Arena
                 return $this->redirectToRoute(
                     'app_arena_show',
                     ['id' => $arena->getId()],
@@ -176,7 +167,6 @@ final class ArenaController extends AbstractController
         Arena $arena,
         EntityManagerInterface $entityManager
         ): Response {
-            // 19.2 — suppression : owner ou admin
             $hasAccess = false;
             
             if ($this->isGranted('ROLE_ADMIN')) {
@@ -225,7 +215,6 @@ final class ArenaController extends AbstractController
                     throw $this->createNotFoundException("Couldn't find this figure in this arena.");
                 }
                 
-                // 19.4 — figure d’une arena non publiée : owner ou admin
                 $hasAccess = false;
                 
                 if ($this->isGranted('ROLE_ADMIN') || $arena->isPublie()) {

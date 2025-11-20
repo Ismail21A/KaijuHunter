@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Repository\ArenaRepository;   // ← add this use
+use App\Repository\ArenaRepository;   
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;

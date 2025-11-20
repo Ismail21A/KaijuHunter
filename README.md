@@ -24,7 +24,6 @@ Champs principaux :
 * `id`
 * `email`
 * `password`
-* `roles` (tableau, inclut au moins `ROLE_USER`)
 * `vitrine` : vitrine personnelle (relation OneToOne vers `Vitrine`)
 * `arenas` : arenas qu’il a créées (OneToMany)
 
@@ -163,32 +162,9 @@ L’application est alors accessible sur :
 
 ---
 
-## 3. Comptes par défaut
+## 3. Navigation dans l’interface
 
-Les fixtures créent au moins les comptes suivants :
-
-### Administrateur
-
-* **Email** : `admin@localhost`
-* **Mot de passe** : `admin123`
-* **Rôle** : `ROLE_ADMIN`
-
-### Utilisateurs simples
-
-* **Email** : `Olivier@localhost` – mot de passe `123456` – `ROLE_USER`
-* **Email** : `Slash@localhost` – mot de passe `123456` – `ROLE_USER`
-
-L’admin (`admin@localhost`) peut :
-
-* voir / modifier toutes les vitrines,
-* voir / modifier toutes les figures,
-* voir / modifier toutes les arenas, y compris privées.
-
----
-
-## 4. Navigation dans l’interface
-
-### 4.1. Barre de navigation principale
+### 3.1. Barre de navigation principale
 
 En haut de chaque page, la navbar propose :
 
@@ -207,14 +183,14 @@ En haut de chaque page, la navbar propose :
   * bouton **Mon espace** → route `app_member_show` (profil du membre connecté)
   * lien **Déconnexion** → route `app_logout`
 
-### 4.2. Page d’accueil (`/`)
+### 3.2. Page d’accueil (`/`)
 
 * Hero présentant **KaijuHunter**
 * Bouton **Explorer les arenas publiques** → `app_arena_index`
 * Bouton **Accéder à ma vitrine** → `vitrine_show` (si connecté)
 * Rappel des comptes de test
 
-### 4.3. Vitrine
+### 3.3. Vitrine
 
 #### Vitrine personnelle — `/vitrine` ou `/vitrines/{id}` (`vitrine_show`)
 
@@ -230,7 +206,7 @@ Accès :
 
 * propriétaire ou admin uniquement (un membre ne voit jamais la vitrine d’un autre).
 
-### 4.4. Figures
+### 3.4. Figures
 
 #### Liste des figures — `/figure` (`app_figure_index`)
 
@@ -265,7 +241,7 @@ Chaque carte propose :
   * upload de l’image (avec contrainte de format/taille),
 * Preview de l’image choisie avant enregistrement.
 
-### 4.5. Arenas
+### 3.5. Arenas
 
 #### Liste des arenas — `/arena` (`app_arena_index`)
 
@@ -304,6 +280,28 @@ Les contrôles d’accès vérifient :
 
 ---
 
+## 4. Comptes par défaut
+
+Les fixtures créent au moins les comptes suivants :
+
+### Administrateur
+
+* **Email** : `admin@localhost`
+* **Mot de passe** : `admin123`
+* **Rôle** : `ROLE_ADMIN`
+
+### Utilisateurs simples
+
+* **Email** : `Olivier@localhost` – mot de passe `123456` – `ROLE_USER`
+* **Email** : `Slash@localhost` – mot de passe `123456` – `ROLE_USER`
+
+L’admin (`admin@localhost`) peut :
+
+* voir / modifier toutes les vitrines,
+* voir / modifier toutes les figures,
+* voir / modifier toutes les arenas, y compris privées.
+
+---
 ## 5. Structure des images
 
 Les images utilisées dans l’application sont stockées dans :
@@ -312,17 +310,6 @@ Les images utilisées dans l’application sont stockées dans :
 
 Les fixtures peuvent référencer des fichiers d’images prédéfinis.
 Il est possible de les remplacer par de vraies images en conservant les mêmes noms.
-
----
-
-## 6. Résumé
-
-* **Backend** : modèle Doctrine propre, relations cohérentes (Member/Vitrine/Figure/Arena), sécurité appliquée par rôle et par propriétaire.
-* **Frontend** : Bootstrap, design cohérent, pages de listing et de détail lisibles.
-* **Admin** : le compte `adam@localhost` (mot de passe `000000`) dispose de tous les droits pour inspection et tests.
-
-KaijuHunter est prêt à être lancé en local pour démonstration, expérimentation ou extension (nouvelles arenas, nouveaux types de figures, etc.).
- 
  
  ---
 

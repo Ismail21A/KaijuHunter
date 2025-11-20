@@ -23,9 +23,6 @@ final class MemberController extends AbstractController
     #[Route('/{id}', name: 'app_member_show', methods: ['GET'])]
     public function show(Member $member, VitrineRepository $vitrineRepository): Response
     {
-        // Contrôle d'accès :
-        // - Admin : peut voir tous les membres
-        // - Sinon : seul le membre lui-même peut voir sa page
         if (
             ! $this->isGranted('ROLE_ADMIN')
             && $this->getUser() !== $member
@@ -33,13 +30,12 @@ final class MemberController extends AbstractController
                 throw $this->createAccessDeniedException("Accès non autorisé à cet espace membre.");
             }
             
-            // Une vitrine par membre (comme avant)
             $vitrine = $vitrineRepository->findOneBy(['owner' => $member]);
             
             return $this->render('member/show.html.twig', [
                 'member'  => $member,
                 'vitrine' => $vitrine,
-                'arenas'  => $member->getArenas(), // collection d'arenas du membre
+                'arenas'  => $member->getArenas(), 
             ]);
     }
 }

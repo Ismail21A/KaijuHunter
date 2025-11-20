@@ -39,7 +39,6 @@ class FigureRepository extends ServiceEntityRepository
     {
         $em = $this->getEntityManager();
         
-        // 1) Nettoyer la relation ManyToMany Figure <-> Arena
         foreach ($entity->getArenas() as $arena) {
             /** @var Arena $arena */
             $arena->removeFigure($entity);
@@ -50,7 +49,6 @@ class FigureRepository extends ServiceEntityRepository
             $em->flush();
         }
         
-        // 2) Supprimer la figure elle-même
         $em->remove($entity);
         
         if ($flush) {
@@ -72,28 +70,5 @@ class FigureRepository extends ServiceEntityRepository
         ;
     }
     
-    //    /**
-    //     * @return Figure[] Returns an array of Figure objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('f')
-    //            ->andWhere('f.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('f.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
     
-    //    public function findOneBySomeField($value): ?Figure
-    //    {
-    //        return $this->createQueryBuilder('f')
-    //            ->andWhere('f.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
 }
